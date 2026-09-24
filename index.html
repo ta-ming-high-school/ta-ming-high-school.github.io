@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大明高中健康管理系統</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        .header {
+            background: linear-gradient(135deg, #042f2e 0%, #0d9488 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .logo-wrapper {
+            display: inline-flex;
+            padding: 10px;
+            background: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 12px;
+        }
+        .school-logo {
+            height: 54px;
+            width: 54px;
+            object-fit: contain;
+            display: block;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+        }
+        .system-list {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .system-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .system-card:hover {
+            border-color: #0d9488;
+            background-color: #f0fdfa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.08);
+            color: #0f766e;
+        }
+        .system-card span {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .system-card .icon {
+            font-size: 1.2rem;
+        }
+        .system-card .arrow {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease;
+        }
+        .system-card:hover .arrow {
+            color: #0d9488;
+            transform: translateX(3px);
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo-wrapper">
+                <img src="https://www.tmsh.tc.edu.tw/upload/about_more_s/thumb_8b3cfe275534e6d972c4a57b7d1e5a56ohb5s.png" alt="大明高中校徽" class="school-logo">
+            </div>
+            <h1>大明高中健康管理系統</h1>
+        </div>
+        <div class="system-list">
+            <a href="./attendance/" class="system-card">
+                <span><span class="icon">📋</span> 學生缺曠通報系統</span>
+                <span class="arrow">➔</span>
+            </a>
+            <a href="./consent/" class="system-card">
+                <span><span class="icon">✍️</span> 新生健檢線上同意書</span>
+                <span class="arrow">➔</span>
+            </a>
+            <a href="./health/" class="system-card">
+                <span><span class="icon">🏥</span> 傷病護理登記系統</span>
+                <span class="arrow">➔</span>
+            </a>
+        </div>
+        <div class="footer">
+            &copy; Ta-Ming High School Health Management System. All rights reserved.
+        </div>
+    </div>
+
+</body>
+</html>
