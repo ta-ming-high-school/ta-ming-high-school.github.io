@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>大明高中 學生缺曠通報系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    [v-cloak] { display: none; }
+    @media print {
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+
+<div id="app" v-cloak>
+
+  <div v-if="!currentUser" class="min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-lg border border-slate-200 p-6 sm:p-8">
+      <div class="text-center mb-6">
+        <div class="flex justify-center mb-3">
+          <img 
+            :src="schoolLogoUrl" 
+            alt="大明高中校徽" 
+            class="w-20 h-20 object-contain rounded-full shadow-sm border p-1 bg-white"
+          />
+        </div>
+        <h1 class="text-xl font-bold text-slate-800">大明高中 學生缺曠通報系統</h1>
+        <p class="text-xs text-slate-500 mt-1">請選擇身分並登入</p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl mb-6">
+        <button 
+          type="button"
+          @click="loginRole = 'class'"
+          :class="['py-2 text-xs font-bold rounded-lg transition', loginRole === 'class' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']"
+        >
+          副班長填報
+        </button>
+        <button 
+          type="button"
+          @click="loginRole = 'teacher'"
+          :class="['py-2 text-xs font-bold rounded-lg transition', loginRole === 'teacher' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']"
+        >
+          導師審核
+        </button>
+        <button 
+          type="button"
+          @click="loginRole = 'admin'"
+          :class="['py-2 text-xs font-bold rounded-lg transition', loginRole === 'admin' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700']"
+        >
+          學務處管理
+        </button>
+      </div>
+
+      <form v-if="loginRole === 'class'" @submit.prevent="handleClassLogin" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">所屬班級</label>
+          <select v-model="classLoginForm.classId" required class="w-full border rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="" disabled>請選擇所屬班級</option>
+            <option v-for="c in classes" :key="c.id" :value="c.id">{{ c.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">副班長姓名</label>
+          <input v-model="classLoginForm.name" type="text" required placeholder="請輸入姓名" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+        </div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-sm transition shadow">
+          進入班級點名
+        </button>
+      </form>
+
+      <form v-else-if="loginRole === 'teacher'" @submit.prevent="handleTeacherLogin" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">任導班級</label>
+          <select v-model="teacherLoginForm.classId" required class="w-full border rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+            <option value="" disabled>請選擇帶領班級</option>
+            <option v-for="c in classes" :key="c.id" :value="c.id">{{ c.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">導師姓名</label>
+          <input v-model="teacherLoginForm.name" type="text" required placeholder="請輸入導師姓名" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+        </div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition shadow">
+          進入導師審核台
+        </button>
+      </form>
+
+      <form v-else @submit.prevent="handleAdminLogin" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">管理員通關密碼</label>
+          <input v-model="adminLoginForm.password" type="password" required placeholder="預設: admin888" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+        </div>
+        <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-lg text-sm transition shadow">
+          登入學務處看板
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <header v-if="currentUser" class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm no-print">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <img :src="schoolLogoUrl" alt="大明高中校徽" class="w-9 h-9 object-contain rounded-full border bg-white" />
+        <div>
+          <span class="font-bold text-slate-800 text-sm hidden sm:inline">大明高中 學生缺曠通報系統</span>
+          <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium ml-1">
+            <template v-if="currentUser.role === 'admin'">學務處管理員</template>
+            <template v-else-if="currentUser.role === 'teacher'">{{ currentUser.className }} · {{ currentUser.userName }} 老師</template>
+            <template v-else>{{ currentUser.className }} · {{ currentUser.userName }} (副班長)</template>
+          </span>
+        </div>
+      </div>
+      <button @click="logout" class="text-xs text-rose-600 hover:text-rose-800 font-bold border border-rose-200 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition">
+        登出
+      </button>
+    </div>
+  </header>
+
+  <main v-if="currentUser && currentUser.role === 'class'" class="max-w-4xl mx-auto p-4 sm:p-6">
+    <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200">
+      
+      <div class="border-b pb-4 mb-6 text-center">
+        <div class="flex items-center justify-center gap-3 mb-2">
+          <img :src="schoolLogoUrl" alt="大明高中校徽" class="w-10 h-10 object-contain rounded-full border bg-white" />
+          <h1 class="text-2xl font-bold tracking-wider">學生缺曠報告單</h1>
+        </div>
+        <p class="text-sm font-semibold text-rose-600">◎ 連續 3 天未到需通報導師、教官 | 8:00 前送交導師與學務處</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">學年度</label>
+          <input v-model="form.schoolYear" type="text" class="w-full border rounded px-3 py-2 text-sm bg-white" placeholder="114" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">班級</label>
+          <input :value="currentUser.className" disabled class="w-full border rounded px-3 py-2 text-sm bg-slate-100 font-bold text-slate-700 cursor-not-allowed" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">通報日期</label>
+          <input v-model="form.reportDate" type="date" class="w-full border rounded px-3 py-2 text-sm bg-white" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 sm:grid-cols-9 gap-2 text-center mb-6 bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+        <div class="p-2 bg-white rounded border">
+          <div class="text-[11px] text-slate-500">應到</div>
+          <div class="text-base font-bold text-slate-800">{{ form.expectedCount }}</div>
+        </div>
+        <div class="p-2 bg-white rounded border">
+          <div class="text-[11px] text-slate-500">實到</div>
+          <div class="text-base font-bold text-emerald-600">{{ actualCount }}</div>
+        </div>
+        <div class="p-2 bg-white rounded border">
+          <div class="text-[11px] text-slate-500">事假</div>
+          <div class="text-base font-bold">{{ countReason('事') }}</div>
+        </div>
+        <div class="p-2 bg-white rounded border">
+          <div class="text-[11px] text-slate-500">病假</div>
+          <div class="text-base font-bold">{{ countReason('病') }}</div>
+        </div>
+        <div class="p-2 bg-white rounded border">
+          <div class="text-[11px] text-slate-500">公假</div>
+          <div class="text-base font-bold">{{ countReason('公') }}</div>
+        </div>
+        <div class="p-2 bg-white rounded border">
+          <div class="text-[11px] text-slate-500">喪假</div>
+          <div class="text-base font-bold">{{ countReason('喪') }}</div>
+        </div>
+        <div class="p-2 bg-white rounded border">
+          <div class="text-[11px] text-slate-500">身心</div>
+          <div class="text-base font-bold">{{ countReason('身心') }}</div>
+        </div>
+        <div class="p-2 bg-white rounded border">
+          <div class="text-[11px] text-slate-500">生理</div>
+          <div class="text-base font-bold">{{ countReason('生理') }}</div>
+        </div>
+        <div class="p-2 bg-white rounded border">
+          <div class="text-[11px] text-slate-500">合計缺席</div>
+          <div class="text-base font-bold text-rose-600">{{ absentees.length }}</div>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-sm sm:text-base font-bold text-slate-700">點名板（點擊卡片切換缺曠狀態）</h2>
+          <button @click="markAllPresent" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded transition">
+            全班到齊 (重設)
+          </button>
+        </div>
+
+        <div v-if="students.length === 0" class="text-center py-8 text-slate-400 border border-dashed rounded-lg">
+          正在載入名單...
+        </div>
+
+        <div v-else class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
+          <div 
+            v-for="student in students" 
+            :key="student.id"
+            @click="toggleStudentStatus(student)"
+            :class="[
+              'p-3 rounded-lg border text-left cursor-pointer transition select-none relative',
+              isAbsent(student.id) 
+                ? 'bg-rose-50 border-rose-300 ring-2 ring-rose-400' 
+                : 'bg-white border-slate-200 hover:border-slate-400'
+            ]"
+          >
+            <div class="flex justify-between items-start">
+              <span class="text-xs font-bold text-slate-400">#{{ student.seat_no }}</span>
+              <span v-if="isAbsent(student.id)" class="text-xs font-bold px-1.5 py-0.5 rounded bg-rose-500 text-white">
+                {{ getAbsentDetail(student.id).reason_type }}
+              </span>
+            </div>
+            <div class="text-sm font-semibold mt-1 text-slate-800 truncate">{{ student.name }}</div>
+            <div v-if="isAbsent(student.id) && getAbsentDetail(student.id).consecutive_days >= 3" class="mt-1 text-[11px] text-rose-600 font-bold flex items-center gap-0.5">
+              ⚠️ 連續 {{ getAbsentDetail(student.id).consecutive_days }} 天
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="absentees.length > 0" class="mb-6">
+        <h2 class="text-base font-bold text-slate-700 mb-2">缺曠名單明細與備註</h2>
+        <div class="border rounded-lg overflow-x-auto">
+          <table class="w-full text-sm text-left min-w-[500px]">
+            <thead class="bg-slate-100 text-slate-600 border-b text-xs">
+              <tr>
+                <th class="py-2 px-3">座號</th>
+                <th class="py-2 px-3">姓名</th>
+                <th class="py-2 px-3">假別</th>
+                <th class="py-2 px-3">未到天數</th>
+                <th class="py-2 px-3">原因備註</th>
+                <th class="py-2 px-3 text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(item, index) in absentees" :key="item.student_id" class="border-b hover:bg-slate-50">
+                <td class="py-2 px-3 font-semibold">{{ item.seat_no }}</td>
+                <td class="py-2 px-3">{{ item.name }}</td>
+                <td class="py-2 px-3">
+                  <select v-model="item.reason_type" class="border rounded px-2 py-1 bg-white text-xs">
+                    <option value="事">事假</option>
+                    <option value="病">病假</option>
+                    <option value="公">公假</option>
+                    <option value="喪">喪假</option>
+                    <option value="身心">身心調適假</option>
+                    <option value="生理">生理假</option>
+                    <option value="事故">事故</option>
+                  </select>
+                </td>
+                <td class="py-2 px-3">
+                  <span :class="item.consecutive_days >= 3 ? 'text-rose-600 font-bold' : ''">
+                    {{ item.consecutive_days }} 天
+                  </span>
+                </td>
+                <td class="py-2 px-3">
+                  <input v-model="item.note" type="text" placeholder="選填原因" class="border rounded px-2 py-1 text-xs w-full bg-white" />
+                </td>
+                <td class="py-2 px-3 text-center">
+                  <button @click="removeAbsentee(index)" class="text-rose-600 hover:text-rose-800 text-xs font-semibold">移除</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="mb-6 bg-slate-50 p-4 rounded-lg border">
+        <label class="block text-xs font-semibold text-slate-500 mb-1">副班長簽章</label>
+        <input :value="currentUser.userName" disabled class="w-full border rounded px-3 py-2 text-sm bg-slate-100 font-bold text-slate-700 cursor-not-allowed" />
+      </div>
+
+      <div class="flex justify-end">
+        <button 
+          @click="submitReport" 
+          :disabled="isSubmitting"
+          class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-semibold px-6 py-2.5 rounded-lg shadow transition"
+        >
+          {{ isSubmitting ? '通報提交中...' : '送出報告單給導師審核' }}
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <main v-if="currentUser && currentUser.role === 'teacher'" class="max-w-4xl mx-auto p-4 sm:p-6">
+    <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200">
+      
+      <div class="border-b pb-4 mb-6 flex flex-wrap justify-between items-center gap-4">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-bold text-slate-800 tracking-wider">班級缺曠審核（導師專區）</h1>
+          <p class="text-xs text-slate-500 mt-1">負責班級：<span class="font-bold text-slate-700">{{ currentUser.className }}</span> ｜ 導師：<span class="font-bold text-slate-700">{{ currentUser.userName }} 老師</span></p>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-semibold text-slate-600">審核日期：</label>
+          <input v-model="teacherSelectedDate" @change="fetchTeacherReport" type="date" class="border rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700" />
+        </div>
+      </div>
+
+      <div v-if="!teacherReport" class="text-center py-16 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+        <div class="text-4xl mb-2">📋</div>
+        <h3 class="text-base font-bold text-slate-700">今日副班長尚未提交點名報告</h3>
+        <p class="text-xs text-slate-400 mt-1">待副班長送出後，此處將自動更新顯示明細以供審核</p>
+      </div>
+
+      <div v-else>
+        <div :class="[
+          'p-4 rounded-xl mb-6 flex justify-between items-center border',
+          teacherReport.status === 'teacher_signed' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800'
+        ]">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">{{ teacherReport.status === 'teacher_signed' ? '✅' : '⏳' }}</span>
+            <div>
+              <div class="font-bold text-sm">
+                {{ teacherReport.status === 'teacher_signed' ? '已核章（已送交學務處）' : '待導師審核確認' }}
+              </div>
+              <div class="text-xs mt-0.5 opacity-80">副班長：{{ teacherReport.vice_leader_signed_by }} 送交於 {{ new Date(teacherReport.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}</div>
+            </div>
+          </div>
+          <span v-if="teacherReport.teacher_signed_by" class="text-xs bg-white px-2.5 py-1 rounded-md font-bold shadow-sm border">
+            導師已簽：{{ teacherReport.teacher_signed_by }}
+          </span>
+        </div>
+
+        <div class="grid grid-cols-3 sm:grid-cols-9 gap-2 text-center mb-6 bg-slate-50 p-3 rounded-lg border">
+          <div class="p-2 bg-white rounded border">
+            <div class="text-[11px] text-slate-500">應到</div>
+            <div class="text-base font-bold">{{ teacherReport.expected_count }}</div>
+          </div>
+          <div class="p-2 bg-white rounded border">
+            <div class="text-[11px] text-slate-500">實到</div>
+            <div class="text-base font-bold text-emerald-600">{{ teacherReport.actual_count }}</div>
+          </div>
+          <div class="p-2 bg-white rounded border">
+            <div class="text-[11px] text-slate-500">事假</div>
+            <div class="text-base font-bold">{{ countTeacherReason('事') }}</div>
+          </div>
+          <div class="p-2 bg-white rounded border">
+            <div class="text-[11px] text-slate-500">病假</div>
+            <div class="text-base font-bold">{{ countTeacherReason('病') }}</div>
+          </div>
+          <div class="p-2 bg-white rounded border">
+            <div class="text-[11px] text-slate-500">公假</div>
+            <div class="text-base font-bold">{{ countTeacherReason('公') }}</div>
+          </div>
+          <div class="p-2 bg-white rounded border">
+            <div class="text-[11px] text-slate-500">喪假</div>
+            <div class="text-base font-bold">{{ countTeacherReason('喪') }}</div>
+          </div>
+          <div class="p-2 bg-white rounded border">
+            <div class="text-[11px] text-slate-500">身心</div>
+            <div class="text-base font-bold">{{ countTeacherReason('身心') }}</div>
+          </div>
+          <div class="p-2 bg-white rounded border">
+            <div class="text-[11px] text-slate-500">生理</div>
+            <div class="text-base font-bold">{{ countTeacherReason('生理') }}</div>
+          </div>
+          <div class="p-2 bg-white rounded border">
+            <div class="text-[11px] text-slate-500">缺席總計</div>
+            <div class="text-base font-bold text-rose-600">{{ teacherAbsentDetails.length }}</div>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="text-sm font-bold text-slate-700 mb-2">缺曠學生名單明細</h3>
+          <div v-if="teacherAbsentDetails.length === 0" class="text-center py-6 bg-emerald-50/50 rounded-lg border border-emerald-200 text-emerald-700 font-semibold text-sm">
+            ✨ 全班到齊，無缺席學生
+          </div>
+          <div v-else class="border rounded-lg overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="bg-slate-100 text-slate-600 border-b text-xs">
+                <tr>
+                  <th class="py-2.5 px-3">座號</th>
+                  <th class="py-2.5 px-3">姓名</th>
+                  <th class="py-2.5 px-3">假別</th>
+                  <th class="py-2.5 px-3">連續天數</th>
+                  <th class="py-2.5 px-3">副班長備註</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr v-for="stu in teacherAbsentDetails" :key="stu.id" class="hover:bg-slate-50">
+                  <td class="py-2.5 px-3 font-semibold">#{{ stu.students.seat_no }}</td>
+                  <td class="py-2.5 px-3 font-bold text-slate-800">{{ stu.students.name }}</td>
+                  <td class="py-2.5 px-3">
+                    <span class="px-2 py-0.5 rounded text-xs font-semibold bg-rose-100 text-rose-700">{{ stu.reason_type }}假</span>
+                  </td>
+                  <td class="py-2.5 px-3 font-bold" :class="stu.consecutive_days >= 3 ? 'text-rose-600' : 'text-slate-600'">
+                    {{ stu.consecutive_days }} 天 <span v-if="stu.consecutive_days >= 3" class="text-xs text-rose-600">(需通報教官)</span>
+                  </td>
+                  <td class="py-2.5 px-3 text-xs text-slate-500">{{ stu.note || '無備註' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t">
+          <button 
+            @click="teacherApprove" 
+            :disabled="isApproving"
+            class="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 text-white font-bold px-6 py-2.5 rounded-lg text-sm shadow transition flex items-center gap-1.5"
+          >
+            <span>{{ isApproving ? '核章中...' : (teacherReport.status === 'teacher_signed' ? '🔄 重新核章送出' : '✍️ 導師確認核章並送出') }}</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <main v-if="currentUser && currentUser.role === 'admin'" class="p-4 sm:p-6 max-w-7xl mx-auto">
+    
+    <div class="bg-white rounded-xl shadow-sm p-4 mb-6 border border-slate-200 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <img :src="schoolLogoUrl" alt="大明高中校徽" class="w-10 h-10 object-contain rounded-full border bg-white" />
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold text-slate-800">全校缺曠即時監控看板</h1>
+          <p class="text-xs text-slate-500">即時監控各班 8:00 前通報狀況與高風險名單</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 no-print">
+        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border">
+          <label class="text-xs font-semibold text-slate-600">查詢日期：</label>
+          <input v-model="adminSelectedDate" @change="fetchAdminData" type="date" class="bg-transparent text-sm font-semibold outline-none text-slate-700" />
+        </div>
+        <button @click="fetchAdminData" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold transition">
+          🔄 重新整理
+        </button>
+        <button onclick="window.print()" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition">
+          🖨️ 列印總表
+        </button>
+      </div>
+    </div>
+
+    <section v-if="highRiskStudents.length > 0" class="mb-6 bg-rose-50 border-2 border-rose-300 rounded-xl p-4 shadow-sm">
+      <div class="flex items-center gap-2 text-rose-700 font-bold mb-3">
+        <span class="text-lg">⚠️</span>
+        <h2 class="text-sm sm:text-base font-bold">高風險通報警示（連續缺曠達 3 天以上）</h2>
+        <span class="bg-rose-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold">{{ highRiskStudents.length }} 人</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div v-for="stu in highRiskStudents" :key="stu.id" class="bg-white p-3 rounded-lg border border-rose-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-start">
+              <span class="text-xs font-bold text-slate-500">{{ stu.class_name }} #{{ stu.seat_no }}</span>
+              <span class="text-xs font-bold bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded">{{ stu.reason_type }}假</span>
+            </div>
+            <div class="text-base font-bold text-slate-900 mt-1">{{ stu.student_name }}</div>
+            <p class="text-xs text-slate-500 mt-1 truncate">備註: {{ stu.note || '無填寫' }}</p>
+          </div>
+          <div class="mt-2 pt-2 border-t border-rose-100 text-right">
+            <span class="text-xs font-bold text-rose-600">已連續缺席 {{ stu.consecutive_days }} 天</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
+      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+        <div class="text-[11px] text-slate-500 font-medium">填報進度</div>
+        <div class="text-lg sm:text-xl font-black mt-1" :class="adminSubmittedCount === adminTotalClasses ? 'text-emerald-600' : 'text-amber-600'">
+          {{ adminSubmittedCount }} / {{ adminTotalClasses }}
+        </div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+        <div class="text-[11px] text-slate-500 font-medium">全校缺席</div>
+        <div class="text-lg sm:text-xl font-black text-rose-600 mt-1">{{ adminSummary.totalAbsent }}</div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+        <div class="text-[11px] text-slate-500 font-medium">事假</div>
+        <div class="text-lg sm:text-xl font-black text-slate-800 mt-1">{{ adminSummary.personal }}</div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+        <div class="text-[11px] text-slate-500 font-medium">病假</div>
+        <div class="text-lg sm:text-xl font-black text-slate-800 mt-1">{{ adminSummary.sick }}</div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+        <div class="text-[11px] text-slate-500 font-medium">公假</div>
+        <div class="text-lg sm:text-xl font-black text-slate-800 mt-1">{{ adminSummary.official }}</div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+        <div class="text-[11px] text-slate-500 font-medium">喪假</div>
+        <div class="text-lg sm:text-xl font-black text-slate-800 mt-1">{{ adminSummary.bereavement }}</div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+        <div class="text-[11px] text-slate-500 font-medium">身心</div>
+        <div class="text-lg sm:text-xl font-black text-slate-800 mt-1">{{ adminSummary.mental }}</div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+        <div class="text-[11px] text-slate-500 font-medium">生理假</div>
+        <div class="text-lg sm:text-xl font-black text-slate-800 mt-1">{{ adminSummary.menstrual }}</div>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="p-4 border-b border-slate-200 flex justify-between items-center">
+        <h2 class="font-bold text-slate-800 text-sm sm:text-base">班級通報與導師審核進度</h2>
+        <div class="text-xs text-slate-400">點擊列可展開明細</div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm min-w-[760px]">
+          <thead class="bg-slate-50 text-slate-600 border-b border-slate-200 text-xs">
+            <tr>
+              <th class="py-3 px-4">填報狀態</th>
+              <th class="py-3 px-4">班級</th>
+              <th class="py-3 px-4">應到</th>
+              <th class="py-3 px-4">實到</th>
+              <th class="py-3 px-4">事</th>
+              <th class="py-3 px-4">病</th>
+              <th class="py-3 px-4">公</th>
+              <th class="py-3 px-4">喪</th>
+              <th class="py-3 px-4">身心</th>
+              <th class="py-3 px-4">生理</th>
+              <th class="py-3 px-4">副班長</th>
+              <th class="py-3 px-4">導師簽章</th>
+              <th class="py-3 px-4 text-center">明細</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <template v-for="item in adminClassList" :key="item.class_id">
+              <tr class="hover:bg-slate-50 transition cursor-pointer" @click="toggleExpand(item.class_id)">
+                <td class="py-3 px-4">
+                  <span v-if="item.status === 'teacher_signed'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">
+                    已核章
+                  </span>
+                  <span v-else-if="item.status === 'submitted'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800">
+                    待導師審核
+                  </span>
+                  <span v-else class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-rose-100 text-rose-700 animate-pulse">
+                    未填報
+                  </span>
+                </td>
+                <td class="py-3 px-4 font-bold text-slate-900 flex items-center gap-1">
+                  {{ item.class_name }}
+                  <span v-if="item.has_high_risk_alert" title="有連續未到3天以上學生">⚠️</span>
+                </td>
+                <td class="py-3 px-4">{{ item.expected_count }}</td>
+                <td class="py-3 px-4 font-bold" :class="item.actual_count < item.expected_count ? 'text-amber-600' : 'text-slate-700'">
+                  {{ item.isSubmitted ? item.actual_count : '-' }}
+                </td>
+                <td class="py-3 px-4 text-slate-600">{{ item.count_personal }}</td>
+                <td class="py-3 px-4 text-slate-600">{{ item.count_sick }}</td>
+                <td class="py-3 px-4 text-slate-600">{{ item.count_official }}</td>
+                <td class="py-3 px-4 text-slate-600">{{ item.count_bereavement }}</td>
+                <td class="py-3 px-4 text-slate-600">{{ item.count_mental }}</td>
+                <td class="py-3 px-4 text-slate-600">{{ item.count_menstrual }}</td>
+                <td class="py-3 px-4 text-xs text-slate-600">{{ item.vice_leader_signed_by || '-' }}</td>
+                <td class="py-3 px-4 text-xs font-semibold" :class="item.teacher_signed_by ? 'text-emerald-700' : 'text-slate-400'">
+                  {{ item.teacher_signed_by || '未簽核' }}
+                </td>
+                <td class="py-3 px-4 text-center text-xs text-blue-600 font-semibold">
+                  {{ expandedClasses.includes(item.class_id) ? '收起 ▲' : '展開 ▼' }}
+                </td>
+              </tr>
+
+              <tr v-if="expandedClasses.includes(item.class_id)" class="bg-slate-50/70">
+                <td colspan="13" class="p-4">
+                  <div v-if="getAbsentStudentsByClass(item.report_id).length === 0" class="text-xs text-slate-500 py-1">
+                    {{ item.isSubmitted ? '全班到齊無缺席' : '尚未提交通報' }}
+                  </div>
+                  <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    <div 
+                      v-for="abs in getAbsentStudentsByClass(item.report_id)" 
+                      :key="abs.id" 
+                      class="bg-white border rounded p-2 text-xs flex justify-between items-center shadow-sm"
+                    >
+                      <div>
+                        <span class="font-bold text-slate-700">#{{ abs.students.seat_no }} {{ abs.students.name }}</span>
+                        <span class="ml-2 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700">
+                          {{ abs.reason_type }}假
+                        </span>
+                        <div class="text-[11px] text-slate-400 mt-0.5">{{ abs.note ? '原因: ' + abs.note : '無備註' }}</div>
+                      </div>
+                      <div class="text-right">
+                        <span class="font-bold" :class="abs.consecutive_days >= 3 ? 'text-rose-600' : 'text-slate-600'">
+                          {{ abs.consecutive_days }} 天
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+</div>
+
+<script>
+  const { createApp, ref, computed, onMounted } = Vue;
+
+  const SUPABASE_URL = 'https://yuahkgrpeentflbhroka.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_nG8jFBAGLCde85QoljciTA_Izdd-9Ac';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const SCHOOL_LOGO_URL = 'https://scontent-lax3-1.xx.fbcdn.net/v/t39.30808-6/345627898_595556202533602_4716763095720319732_n.jpg?stp=dst-jpg_tt6&cstp=mx1601x1601&ctp=s1601x1601&_nc_cat=108&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=QkyphcXEcLMQ7kNvwGznAqi&_nc_oc=AdqiS98dFT9P6n07K9dq4cZCVuPdsGW0DdNGyqbmpz7MMsO7cpue5U2R4vMiO76-PJg&_nc_zt=23&_nc_ht=scontent-lax3-1.xx&_nc_gid=B07PIAQJFUF9npK2jXUBDQ&_nc_ss=7b2a8&oh=00_AQGm6IVbV6bQGCrx6EkKnm9ytp5TGwT-GTwZqoYCw6-ICA&oe=6A93720B';
+
+  createApp({
+    setup() {
+      const schoolLogoUrl = ref(SCHOOL_LOGO_URL);
+
+      const currentUser = ref(null);
+      const loginRole = ref('class');
+
+      const classLoginForm = ref({ classId: '', name: '' });
+      const teacherLoginForm = ref({ classId: '', name: '' });
+      const adminLoginForm = ref({ password: '' });
+
+      const classes = ref([]);
+
+      const students = ref([]);
+      const absentees = ref([]);
+      const isSubmitting = ref(false);
+      const form = ref({
+        schoolYear: '114',
+        reportDate: new Date().toISOString().split('T')[0],
+        expectedCount: 0
+      });
+
+      const teacherSelectedDate = ref(new Date().toISOString().split('T')[0]);
+      const teacherReport = ref(null);
+      const teacherAbsentDetails = ref([]);
+      const isApproving = ref(false);
+
+      const adminSelectedDate = ref(new Date().toISOString().split('T')[0]);
+      const adminReports = ref([]);
+      const adminAbsentDetails = ref([]);
+      const expandedClasses = ref([]);
+
+      const loadClasses = async () => {
+        const { data, error } = await supabaseClient.from('classes').select('*').order('name');
+        if (!error && data) classes.value = data;
+      };
+
+      const handleClassLogin = async () => {
+        const targetClass = classes.value.find(c => c.id === classLoginForm.value.classId);
+        if (!targetClass) return alert('請選擇班級');
+
+        currentUser.value = {
+          role: 'class',
+          classId: targetClass.id,
+          className: targetClass.name,
+          userName: classLoginForm.value.name.trim()
+        };
+        sessionStorage.setItem('tmhs_user', JSON.stringify(currentUser.value));
+        await initClassView();
+      };
+
+      const handleTeacherLogin = async () => {
+        const targetClass = classes.value.find(c => c.id === teacherLoginForm.value.classId);
+        if (!targetClass) return alert('請選擇班級');
+
+        currentUser.value = {
+          role: 'teacher',
+          classId: targetClass.id,
+          className: targetClass.name,
+          userName: teacherLoginForm.value.name.trim()
+        };
+        sessionStorage.setItem('tmhs_user', JSON.stringify(currentUser.value));
+        await fetchTeacherReport();
+      };
+
+      const handleAdminLogin = async () => {
+        if (adminLoginForm.value.password === 'admin888') {
+          currentUser.value = {
+            role: 'admin',
+            userName: '學務處管理員'
+          };
+          sessionStorage.setItem('tmhs_user', JSON.stringify(currentUser.value));
+          await fetchAdminData();
+        } else {
+          alert('密碼錯誤！(預設密碼為 admin888)');
+        }
+      };
+
+      const logout = () => {
+        currentUser.value = null;
+        sessionStorage.removeItem('tmhs_user');
+      };
+
+      const initClassView = async () => {
+        absentees.value = [];
+        const currentClass = classes.value.find(c => c.id === currentUser.value.classId);
+        if (currentClass) {
+          form.value.expectedCount = currentClass.expected_count || 0;
+        }
+
+        const { data, error } = await supabaseClient
+          .from('students')
+          .select('*')
+          .eq('class_id', currentUser.value.classId)
+          .order('seat_no');
+
+        if (!error && data) {
+          students.value = data;
+          if (!form.value.expectedCount) {
+            form.value.expectedCount = data.length;
+          }
+        }
+      };
+
+      const actualCount = computed(() => {
+        return Math.max(0, form.value.expectedCount - absentees.value.length);
+      });
+
+      const countReason = (reason) => {
+        return absentees.value.filter(a => a.reason_type === reason).length;
+      };
+
+      const isAbsent = (studentId) => {
+        return absentees.value.some(a => a.student_id === studentId);
+      };
+
+      const getAbsentDetail = (studentId) => {
+        return absentees.value.find(a => a.student_id === studentId) || {};
+      };
+
+      const toggleStudentStatus = async (student) => {
+        const index = absentees.value.findIndex(a => a.student_id === student.id);
+        if (index > -1) {
+          absentees.value.splice(index, 1);
+        } else {
+          let days = 1;
+          try {
+            const { data } = await supabaseClient.rpc('get_consecutive_absent_days', {
+              p_student_id: student.id,
+              p_date: form.value.reportDate
+            });
+            if (data) days = data;
+          } catch (e) {
+            console.warn('RPC 查詢失敗:', e);
+          }
+
+          absentees.value.push({
+            student_id: student.id,
+            seat_no: student.seat_no,
+            name: student.name,
+            reason_type: '事',
+            consecutive_days: days,
+            note: ''
+          });
+        }
+      };
+
+      const removeAbsentee = (index) => {
+        absentees.value.splice(index, 1);
+      };
+
+      const markAllPresent = () => {
+        absentees.value = [];
+      };
+
+      const submitReport = async () => {
+        isSubmitting.value = true;
+        try {
+          const reportPayload = {
+            school_year: form.value.schoolYear,
+            report_date: form.value.reportDate,
+            class_id: currentUser.value.classId,
+            expected_count: form.value.expectedCount,
+            actual_count: actualCount.value,
+            is_all_present: absentees.value.length === 0,
+            status: 'submitted',
+            vice_leader_signed_by: currentUser.value.userName
+          };
+
+          const { data: reportData, error: reportError } = await supabaseClient
+            .from('daily_attendance_reports')
+            .upsert(reportPayload, { onConflict: 'report_date, class_id' })
+            .select()
+            .single();
+
+          if (reportError) throw reportError;
+
+          await supabaseClient.from('absentee_details').delete().eq('report_id', reportData.id);
+
+          if (absentees.value.length > 0) {
+            const detailPayload = absentees.value.map(a => ({
+              report_id: reportData.id,
+              student_id: a.student_id,
+              reason_type: a.reason_type,
+              consecutive_days: a.consecutive_days,
+              note: a.note
+            }));
+
+            const { error: detailError } = await supabaseClient
+              .from('absentee_details')
+              .insert(detailPayload);
+
+            if (detailError) throw detailError;
+          }
+
+          alert('缺曠通報已送出！已通知導師進行線上審核。');
+        } catch (err) {
+          console.error(err);
+          alert('提交失敗：' + (err.message || '請確認權限或網路'));
+        } finally {
+          isSubmitting.value = false;
+        }
+      };
+
+      const fetchTeacherReport = async () => {
+        if (!currentUser.value || currentUser.value.role !== 'teacher') return;
+        try {
+          const { data: report, error } = await supabaseClient
+            .from('daily_attendance_reports')
+            .select('*')
+            .eq('class_id', currentUser.value.classId)
+            .eq('report_date', teacherSelectedDate.value)
+            .maybeSingle();
+
+          if (error) throw error;
+          teacherReport.value = report;
+
+          if (report) {
+            const { data: details } = await supabaseClient
+              .from('absentee_details')
+              .select('*, students(seat_no, name)')
+              .eq('report_id', report.id);
+            teacherAbsentDetails.value = details || [];
+          } else {
+            teacherAbsentDetails.value = [];
+          }
+        } catch (err) {
+          console.error('導師資料抓取失敗:', err);
+        }
+      };
+
+      const countTeacherReason = (reason) => {
+        return teacherAbsentDetails.value.filter(d => d.reason_type === reason).length;
+      };
+
+      const teacherApprove = async () => {
+        if (!teacherReport.value) return;
+        isApproving.value = true;
+        try {
+          const { error } = await supabaseClient
+            .from('daily_attendance_reports')
+            .update({
+              status: 'teacher_signed',
+              teacher_signed_by: currentUser.value.userName
+            })
+            .eq('id', teacherReport.value.id);
+
+          if (error) throw error;
+          alert('核章成功！資料已正式送達學務處。');
+          await fetchTeacherReport();
+        } catch (err) {
+          console.error(err);
+          alert('核章失敗：' + (err.message || '連線錯誤'));
+        } finally {
+          isApproving.value = false;
+        }
+      };
+
+      const fetchAdminData = async () => {
+        try {
+          const { data: rData } = await supabaseClient
+            .from('daily_attendance_reports')
+            .select('*')
+            .eq('report_date', adminSelectedDate.value);
+          adminReports.value = rData || [];
+
+          if (adminReports.value.length > 0) {
+            const reportIds = adminReports.value.map(r => r.id);
+            const { data: dData } = await supabaseClient
+              .from('absentee_details')
+              .select('*, students(seat_no, name)')
+              .in('report_id', reportIds);
+            adminAbsentDetails.value = dData || [];
+          } else {
+            adminAbsentDetails.value = [];
+          }
+        } catch (err) {
+          console.error('管理端資料失敗:', err);
+        }
+      };
+
+      const adminClassList = computed(() => {
+        return classes.value.map(c => {
+          const report = adminReports.value.find(r => r.class_id === c.id);
+          const details = report ? adminAbsentDetails.value.filter(d => d.report_id === report.id) : [];
+
+          return {
+            class_id: c.id,
+            class_name: c.name,
+            expected_count: c.expected_count,
+            isSubmitted: !!report,
+            status: report ? report.status : 'none',
+            report_id: report ? report.id : null,
+            actual_count: report ? report.actual_count : 0,
+            vice_leader_signed_by: report ? report.vice_leader_signed_by : '',
+            teacher_signed_by: report ? report.teacher_signed_by : '',
+            count_personal: details.filter(d => d.reason_type === '事').length,
+            count_sick: details.filter(d => d.reason_type === '病').length,
+            count_official: details.filter(d => d.reason_type === '公').length,
+            count_bereavement: details.filter(d => d.reason_type === '喪').length,
+            count_mental: details.filter(d => d.reason_type === '身心').length,
+            count_menstrual: details.filter(d => d.reason_type === '生理').length,
+            has_high_risk_alert: details.some(d => d.consecutive_days >= 3)
+          };
+        });
+      });
+
+      const adminSummary = computed(() => {
+        return {
+          totalAbsent: adminAbsentDetails.value.length,
+          personal: adminAbsentDetails.value.filter(d => d.reason_type === '事').length,
+          sick: adminAbsentDetails.value.filter(d => d.reason_type === '病').length,
+          official: adminAbsentDetails.value.filter(d => d.reason_type === '公').length,
+          bereavement: adminAbsentDetails.value.filter(d => d.reason_type === '喪').length,
+          mental: adminAbsentDetails.value.filter(d => d.reason_type === '身心').length,
+          menstrual: adminAbsentDetails.value.filter(d => d.reason_type === '生理').length
+        };
+      });
+
+      const adminTotalClasses = computed(() => classes.value.length);
+      const adminSubmittedCount = computed(() => adminReports.value.length);
+
+      const highRiskStudents = computed(() => {
+        return adminAbsentDetails.value
+          .filter(d => d.consecutive_days >= 3)
+          .map(d => {
+            const report = adminReports.value.find(r => r.id === d.report_id);
+            const currentClass = classes.value.find(c => c.id === report?.class_id);
+            return {
+              id: d.id,
+              class_name: currentClass ? currentClass.name : '',
+              seat_no: d.students?.seat_no,
+              student_name: d.students?.name,
+              reason_type: d.reason_type,
+              consecutive_days: d.consecutive_days,
+              note: d.note
+            };
+          });
+      });
+
+      const getAbsentStudentsByClass = (reportId) => {
+        if (!reportId) return [];
+        return adminAbsentDetails.value.filter(d => d.report_id === reportId);
+      };
+
+      const toggleExpand = (classId) => {
+        const idx = expandedClasses.value.indexOf(classId);
+        if (idx > -1) expandedClasses.value.splice(idx, 1);
+        else expandedClasses.value.push(classId);
+      };
+
+      const setupRealtime = () => {
+        supabaseClient
+          .channel('public:attendance')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_attendance_reports' }, () => {
+            if (currentUser.value?.role === 'teacher') fetchTeacherReport();
+            if (currentUser.value?.role === 'admin') fetchAdminData();
+          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'absentee_details' }, () => {
+            if (currentUser.value?.role === 'teacher') fetchTeacherReport();
+            if (currentUser.value?.role === 'admin') fetchAdminData();
+          })
+          .subscribe();
+      };
+
+      onMounted(async () => {
+        await loadClasses();
+
+        const savedUser = sessionStorage.getItem('tmhs_user');
+        if (savedUser) {
+          currentUser.value = JSON.parse(savedUser);
+          if (currentUser.value.role === 'class') await initClassView();
+          if (currentUser.value.role === 'teacher') await fetchTeacherReport();
+          if (currentUser.value.role === 'admin') await fetchAdminData();
+        }
+
+        setupRealtime();
+      });
+
+      return {
+        schoolLogoUrl,
+        currentUser,
+        loginRole,
+        classLoginForm,
+        teacherLoginForm,
+        adminLoginForm,
+        classes,
+        students,
+        absentees,
+        form,
+        isSubmitting,
+        actualCount,
+        teacherSelectedDate,
+        teacherReport,
+        teacherAbsentDetails,
+        isApproving,
+        adminSelectedDate,
+        adminClassList,
+        adminSummary,
+        adminTotalClasses,
+        adminSubmittedCount,
+        highRiskStudents,
+        expandedClasses,
+        handleClassLogin,
+        handleTeacherLogin,
+        handleAdminLogin,
+        logout,
+        countReason,
+        countTeacherReason,
+        isAbsent,
+        getAbsentDetail,
+        toggleStudentStatus,
+        removeAbsentee,
+        markAllPresent,
+        submitReport,
+        fetchTeacherReport,
+        teacherApprove,
+        fetchAdminData,
+        getAbsentStudentsByClass,
+        toggleExpand
+      };
+    }
+  }).mount('#app');
+</script>
+
+</body>
+</html>
