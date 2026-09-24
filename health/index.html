@@ -185,7 +185,7 @@
         </form>
       </section>
 
-      <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex flex-wrap justify-between items-center gap-3">
           <div>
             <h3 class="font-bold text-slate-800 text-base">
@@ -305,11 +305,40 @@
 
     <main id="view-settings" class="hidden space-y-6">
       
+      <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="border-b pb-3 flex justify-between items-center flex-wrap gap-2">
+          <div>
+            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+              <span>🏫</span> 班級管理
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">目前學期：<span class="font-bold text-teal-700 currentSemText">--</span>。可檢視、新增或維護全校班級名稱。</p>
+          </div>
+          <button onclick="openAddClassModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold py-1.5 px-3.5 rounded-lg shadow-xs transition">
+            + 新增班級
+          </button>
+        </div>
+
+        <div class="overflow-x-auto border rounded-xl max-h-72 overflow-y-auto">
+          <table class="min-w-full text-xs text-left bg-white">
+            <thead class="bg-slate-100 text-slate-600 sticky top-0">
+              <tr>
+                <th class="p-2.5 border-b w-16">編號</th>
+                <th class="p-2.5 border-b">班級名稱</th>
+                <th class="p-2.5 border-b text-center w-28">操作</th>
+              </tr>
+            </thead>
+            <tbody id="classManageTableTbody" class="divide-y text-slate-700">
+              <tr><td colspan="3" class="text-center p-4 text-slate-400">載入班級中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
         <div class="border-b pb-3 flex justify-between items-center flex-wrap gap-2">
           <div>
             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-              <span>👥</span> 學生名冊管理
+              <span>👥</span> 學生管理
             </h2>
             <p class="text-xs text-slate-500 mt-1">
               目前學期：<span class="font-bold text-teal-700 currentSemText">--</span>。名冊依<span class="font-bold text-teal-700">「班級 &gt; 座號 &gt; 姓名」由小到大排序</span>。
@@ -342,9 +371,6 @@
               <select id="manageClassSelect" onchange="filterStudentTable()" class="p-1.5 border rounded-lg bg-white text-xs font-bold text-teal-800">
                 <option value="">載入班級中...</option>
               </select>
-              <button onclick="openAddClassModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold py-1.5 px-3 rounded-lg shadow-xs">+ 新增班級</button>
-              <button onclick="openEditClassModal()" class="text-xs text-blue-600 hover:underline">修改班級</button>
-              <button onclick="deleteCurrentClass()" class="text-xs text-rose-600 hover:underline">刪除班級</button>
             </div>
 
             <div class="flex items-center gap-2">
@@ -378,7 +404,7 @@
         <div class="border-b pb-3 flex justify-between items-center flex-wrap gap-2">
           <div>
             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-              <span>📅</span> 學期管理與日期起訖設定
+              <span>📅</span> 學期管理
             </h2>
             <p class="text-xs text-slate-500 mt-1">設定各學期之起訖日期，指定系統預設學期，或修改歷史學期時間。</p>
           </div>
@@ -408,9 +434,9 @@
       <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="border-b pb-3">
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <span>🏷️</span> 地點與傷病分類項目管理 (一卡四欄統一規格)
+            <span>🏷️</span> 地點與傷病分類項目管理
           </h2>
-          <p class="text-xs text-slate-500 mt-1">點擊各欄「+ 新增」按鈕開啟視窗填寫，不再於版面上直接塞入輸入欄位。</p>
+          <p class="text-xs text-slate-500 mt-1">點擊各欄「+ 新增」按鈕開啟視窗填寫，外部無輸入欄位。</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -584,13 +610,18 @@
     function closeModal() {
       document.getElementById('commonModal').classList.add('hidden');
       document.getElementById('modalBody').innerHTML = '';
-      document.getElementById('modalConfirmBtn').onclick = null;
+      const confirmBtn = document.getElementById('modalConfirmBtn');
+      const clone = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(clone, confirmBtn);
     }
 
     function openModal(title, bodyHtml, confirmCallback) {
       document.getElementById('modalTitle').innerText = title;
       document.getElementById('modalBody').innerHTML = bodyHtml;
-      document.getElementById('modalConfirmBtn').onclick = async () => {
+      const confirmBtn = document.getElementById('modalConfirmBtn');
+      const clone = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(clone, confirmBtn);
+      clone.onclick = async () => {
         await confirmCallback();
       };
       document.getElementById('commonModal').classList.remove('hidden');
@@ -930,6 +961,29 @@
         const tbody = document.getElementById('studentManageTbody');
         if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-slate-400">[${sem}] 學期目前無班級與學生，請新增或匯入。</td></tr>`;
       }
+
+      renderClassManagementTable();
+    }
+
+    function renderClassManagementTable() {
+      const tbody = document.getElementById('classManageTableTbody');
+      if (!tbody) return;
+
+      if (allClassObjects.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center p-4 text-slate-400">目前尚無班級資料，請點擊上方按鈕新增。</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = allClassObjects.map((c, idx) => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-2.5 font-bold text-teal-800">${idx + 1}</td>
+          <td class="p-2.5 font-bold text-slate-800">${c.name}</td>
+          <td class="p-2.5 text-center whitespace-nowrap">
+            <button onclick="openEditClassModalById('${c.id}', '${c.name}')" class="text-blue-600 hover:text-blue-800 mr-2.5 font-medium">編輯</button>
+            <button onclick="deleteClassById('${c.id}', '${c.name}')" class="text-rose-600 hover:text-rose-800 font-medium">刪除</button>
+          </td>
+        </tr>
+      `).join('');
     }
 
     function openAddClassModal() {
@@ -954,12 +1008,7 @@
       });
     }
 
-    function openEditClassModal() {
-      const select = document.getElementById('manageClassSelect');
-      const classId = select.value;
-      if (!classId) return alert('請先在「篩選班級」選取要修改的特定班級！');
-
-      const oldName = select.selectedOptions[0].text;
+    function openEditClassModalById(classId, oldName) {
       const bodyHtml = `
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">新班級名稱：</label>
@@ -981,12 +1030,7 @@
       });
     }
 
-    async function deleteCurrentClass() {
-      const select = document.getElementById('manageClassSelect');
-      const classId = select.value;
-      if (!classId) return alert('請先在「篩選班級」選取要刪除的特定班級！');
-
-      const className = select.selectedOptions[0].text;
+    async function deleteClassById(classId, className) {
       if (!confirm(`警告：確定要刪除「${className}」嗎？\n這將一併刪除該班級底下的所有學生名冊！`)) return;
 
       const { error } = await dbClient.from('classes').delete().eq('id', classId);
@@ -1253,7 +1297,8 @@
             const cName = String(r['班級'] || r['class'] || '').trim();
             const seat = parseInt(r['座號'] || r['seat_no'] || 0);
             const name = String(r['姓名'] || r['name'] || '').trim();
-            const gender = String(r['性別'] || r['gender'] || '女').trim();
+            const rawGender = String(r['性別'] || r['gender'] || '女').trim();
+            const gender = (rawGender === '男') ? '男' : '女';
             const classId = classMap.get(cName);
 
             if (classId && name && seat > 0) {
@@ -1269,7 +1314,7 @@
                 class_id: classId, 
                 seat_no: seat, 
                 name: name,
-                gender: gender === '男' ? '男' : '女'
+                gender: gender
               });
             }
           }
