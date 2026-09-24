@@ -33,7 +33,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 p-3 md:p-6 min-h-screen">
 
-  <div class="max-w-6xl mx-auto space-y-5">
+  <div class="max-w-7xl mx-auto space-y-5">
     
     <header class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4">
       <div class="flex items-center gap-3.5">
@@ -51,7 +51,7 @@
       <div class="flex flex-wrap items-center gap-3">
         <div class="flex items-center bg-slate-50 rounded-xl px-2.5 py-1.5 border border-slate-300">
           <span class="text-xs font-bold text-slate-600 mr-1.5">當前學期：</span>
-          <select id="globalSemesterSelect" onchange="onSemesterChange()" class="bg-white text-xs font-bold rounded-lg px-2 py-1 border border-slate-300 text-teal-800 focus:outline-none">
+          <select id="globalSemesterSelect" onchange="onSemesterChange()" class="bg-white text-xs font-bold rounded-lg px-2 py-1 border border-slate-300 text-teal-800 focus:outline-none cursor-pointer">
             <option value="">載入中...</option>
           </select>
         </div>
@@ -375,185 +375,155 @@
       </section>
 
       <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-        <div class="border-b pb-3">
-          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <span>📅</span> 學期管理與日期起訖設定 (新增、修改、刪除)
-          </h2>
-          <p class="text-xs text-slate-500 mt-1">設定各學期之起訖日期，指定系統預設學期，或修改歷史學期時間。</p>
+        <div class="border-b pb-3 flex justify-between items-center flex-wrap gap-2">
+          <div>
+            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+              <span>📅</span> 學期管理與日期起訖設定
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">設定各學期之起訖日期，指定系統預設學期，或修改歷史學期時間。</p>
+          </div>
+          <button onclick="openAddSemesterModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold py-1.5 px-3.5 rounded-lg shadow-xs transition">
+            + 新增學期
+          </button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-            <h3 class="text-xs font-bold text-slate-700">新增或編輯學期</h3>
-            <div>
-              <label class="block text-xs text-slate-600 mb-1">學期代碼 (例：114-1, 114-2) *</label>
-              <input type="text" id="cfgSemesterId" placeholder="114-1" class="w-full p-2 border rounded-lg text-xs bg-white">
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-xs text-slate-600 mb-1">學期開始日期 *</label>
-                <input type="date" id="cfgSemesterStart" class="w-full p-2 border rounded-lg text-xs bg-white">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-600 mb-1">學期結束日期 *</label>
-                <input type="date" id="cfgSemesterEnd" class="w-full p-2 border rounded-lg text-xs bg-white">
-              </div>
-            </div>
-            <div class="flex items-center gap-2 pt-1">
-              <input type="checkbox" id="cfgSemesterIsDefault" class="rounded text-teal-600">
-              <label for="cfgSemesterIsDefault" class="text-xs text-slate-700 font-medium">設為系統當前預設學期</label>
-            </div>
-            <button type="button" onclick="saveSemesterConfig()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 rounded-lg text-xs transition">
-              儲存學期設定
-            </button>
-          </div>
-
-          <div class="lg:col-span-2 space-y-2">
-            <h3 class="text-xs font-bold text-slate-700">已建立之學期清單：</h3>
-            <div class="overflow-x-auto border rounded-xl">
-              <table class="min-w-full text-xs text-left bg-white">
-                <thead class="bg-slate-100 text-slate-600">
-                  <tr>
-                    <th class="p-2.5 border-b">學期別</th>
-                    <th class="p-2.5 border-b">開始日期</th>
-                    <th class="p-2.5 border-b">結束日期</th>
-                    <th class="p-2.5 border-b text-center">預設學期</th>
-                    <th class="p-2.5 border-b text-center">操作</th>
-                  </tr>
-                </thead>
-                <tbody id="semestersTableBody" class="divide-y text-slate-700">
-                  <tr><td colspan="5" class="text-center p-3 text-slate-400">載入學期中...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+        <div class="overflow-x-auto border rounded-xl">
+          <table class="min-w-full text-xs text-left bg-white">
+            <thead class="bg-slate-100 text-slate-600">
+              <tr>
+                <th class="p-2.5 border-b">學期別</th>
+                <th class="p-2.5 border-b">開始日期</th>
+                <th class="p-2.5 border-b">結束日期</th>
+                <th class="p-2.5 border-b text-center">預設學期</th>
+                <th class="p-2.5 border-b text-center w-28">操作</th>
+              </tr>
+            </thead>
+            <tbody id="semestersTableBody" class="divide-y text-slate-700">
+              <tr><td colspan="5" class="text-center p-3 text-slate-400">載入學期中...</td></tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
       <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="border-b pb-3">
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <span>📍</span> 校園常見地點管理 (新增、修改、刪除)
+            <span>🏷️</span> 地點與傷病分類項目管理 (一卡四欄統一規格)
           </h2>
-          <p class="text-xs text-slate-500 mt-1">地點清單建立後，日常登記表單的地點欄位會自動切換為選單，支援個別新增、修改與刪除。</p>
+          <p class="text-xs text-slate-500 mt-1">點擊各欄「+ 新增」按鈕開啟視窗填寫，不再於版面上直接塞入輸入欄位。</p>
         </div>
 
-        <div class="space-y-3">
-          <div class="flex flex-wrap justify-between items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-            <div class="flex flex-wrap items-center gap-2 flex-1 max-w-md">
-              <input type="text" id="singleLocationInput" placeholder="輸入新地點名稱 (例：體育館、圖書館)..." class="flex-1 p-1.5 border rounded-lg text-xs bg-white">
-              <button type="button" onclick="addSingleLocation()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold py-1.5 px-3 rounded-lg shadow-xs">+ 新增地點</button>
-            </div>
-            <button type="button" onclick="openBatchLocationsModal()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-1.5 px-3 rounded-lg shadow-xs">
-              批次新增地點
-            </button>
-          </div>
-
-          <div class="overflow-x-auto border rounded-xl max-h-80 overflow-y-auto">
-            <table class="min-w-full text-xs text-left bg-white">
-              <thead class="bg-slate-100 text-slate-600 sticky top-0">
-                <tr>
-                  <th class="p-2.5 border-b w-16">編號</th>
-                  <th class="p-2.5 border-b">地點名稱</th>
-                  <th class="p-2.5 border-b text-center w-28">操作</th>
-                </tr>
-              </thead>
-              <tbody id="locationsManageTbody" class="divide-y text-slate-700">
-                <tr><td colspan="3" class="text-center p-4 text-slate-400">載入地點清單中...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-        <div class="border-b pb-3">
-          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <span>🏷️</span> 傷病分類與處置細項自訂 (新增、修改、刪除)
-          </h2>
-          <p class="text-xs text-slate-500 mt-1">可隨時擴充、點擊修改名稱或刪除項目標籤，即時連動登記核選區與匯出報表。</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           
-          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/50 space-y-3">
-            <div class="flex justify-between items-center pb-2 border-b border-slate-200">
-              <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                意外傷害項目
-              </span>
-              <span id="badgeCountAccident" class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">0 項</span>
-            </div>
-            <div class="flex gap-1.5">
-              <input type="text" id="newAccidentInput" placeholder="新增意外細項" class="flex-1 p-1.5 border rounded-lg text-xs bg-white">
-              <button onclick="addCustomItem('accident', 'newAccidentInput')" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 rounded-lg font-bold shadow-xs">新增</button>
-            </div>
-            <div class="overflow-x-auto border border-slate-200 rounded-lg max-h-64 overflow-y-auto bg-white">
-              <table class="min-w-full text-xs text-left">
-                <thead class="bg-slate-100 text-slate-600 sticky top-0">
-                  <tr>
-                    <th class="p-2 border-b">項目名稱</th>
-                    <th class="p-2 border-b text-center w-24">操作</th>
-                  </tr>
-                </thead>
-                <tbody id="accidentManageTbody" class="divide-y text-slate-700">
-                  <tr><td colspan="2" class="text-center p-3 text-slate-400">載入中...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/50 space-y-3">
-            <div class="flex justify-between items-center pb-2 border-b border-slate-200">
-              <span class="text-xs font-bold text-sky-900 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-sky-500"></span>
-                身體症狀項目
-              </span>
-              <span id="badgeCountSymptom" class="text-[10px] font-bold bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full">0 項</span>
-            </div>
-            <div class="flex gap-1.5">
-              <input type="text" id="newSymptomInput" placeholder="新增症狀細項" class="flex-1 p-1.5 border rounded-lg text-xs bg-white">
-              <button onclick="addCustomItem('symptom', 'newSymptomInput')" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 rounded-lg font-bold shadow-xs">新增</button>
-            </div>
-            <div class="overflow-x-auto border border-slate-200 rounded-lg max-h-64 overflow-y-auto bg-white">
-              <table class="min-w-full text-xs text-left">
-                <thead class="bg-slate-100 text-slate-600 sticky top-0">
-                  <tr>
-                    <th class="p-2 border-b">項目名稱</th>
-                    <th class="p-2 border-b text-center w-24">操作</th>
-                  </tr>
-                </thead>
-                <tbody id="symptomManageTbody" class="divide-y text-slate-700">
-                  <tr><td colspan="2" class="text-center p-3 text-slate-400">載入中...</td></tr>
-                </tbody>
-              </table>
+          <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50 space-y-3 flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="flex justify-between items-center pb-2 border-b border-slate-200">
+                <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span>📍</span> 校園地點
+                </span>
+                <span id="badgeCountLocation" class="text-[10px] font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">0 項</span>
+              </div>
+              <div class="flex justify-end gap-1.5">
+                <button type="button" onclick="openBatchLocationsModal()" class="text-slate-600 hover:text-slate-900 border border-slate-300 text-xs px-2.5 py-1 rounded-lg font-semibold bg-white shadow-2xs">批次</button>
+                <button type="button" onclick="openAddSingleLocationModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs px-3 py-1 rounded-lg font-bold shadow-xs">+ 新增</button>
+              </div>
+              <div class="overflow-x-auto border border-slate-200 rounded-lg max-h-72 overflow-y-auto bg-white custom-scroll">
+                <table class="min-w-full text-xs text-left">
+                  <thead class="bg-slate-100 text-slate-600 sticky top-0">
+                    <tr>
+                      <th class="p-2 border-b">地點名稱</th>
+                      <th class="p-2 border-b text-center w-24">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="locationsManageTbody" class="divide-y text-slate-700">
+                    <tr><td colspan="2" class="text-center p-3 text-slate-400">載入中...</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
-          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/50 space-y-3">
-            <div class="flex justify-between items-center pb-2 border-b border-slate-200">
-              <span class="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                處理方式項目
-              </span>
-              <span id="badgeCountTreatment" class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">0 項</span>
+          <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50 space-y-3 flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="flex justify-between items-center pb-2 border-b border-slate-200">
+                <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                  意外傷害
+                </span>
+                <span id="badgeCountAccident" class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">0 項</span>
+              </div>
+              <div class="flex justify-end">
+                <button onclick="openAddCategoryItemModal('accident', '意外傷害')" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1 rounded-lg font-bold shadow-xs">+ 新增</button>
+              </div>
+              <div class="overflow-x-auto border border-slate-200 rounded-lg max-h-72 overflow-y-auto bg-white custom-scroll">
+                <table class="min-w-full text-xs text-left">
+                  <thead class="bg-slate-100 text-slate-600 sticky top-0">
+                    <tr>
+                      <th class="p-2 border-b">項目名稱</th>
+                      <th class="p-2 border-b text-center w-24">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="accidentManageTbody" class="divide-y text-slate-700">
+                    <tr><td colspan="2" class="text-center p-3 text-slate-400">載入中...</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div class="flex gap-1.5">
-              <input type="text" id="newTreatmentInput" placeholder="新增處置細項" class="flex-1 p-1.5 border rounded-lg text-xs bg-white">
-              <button onclick="addCustomItem('treatment', 'newTreatmentInput')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 rounded-lg font-bold shadow-xs">新增</button>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50 space-y-3 flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="flex justify-between items-center pb-2 border-b border-slate-200">
+                <span class="text-xs font-bold text-sky-900 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+                  身體症狀
+                </span>
+                <span id="badgeCountSymptom" class="text-[10px] font-bold bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full">0 項</span>
+              </div>
+              <div class="flex justify-end">
+                <button onclick="openAddCategoryItemModal('symptom', '身體症狀')" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 py-1 rounded-lg font-bold shadow-xs">+ 新增</button>
+              </div>
+              <div class="overflow-x-auto border border-slate-200 rounded-lg max-h-72 overflow-y-auto bg-white custom-scroll">
+                <table class="min-w-full text-xs text-left">
+                  <thead class="bg-slate-100 text-slate-600 sticky top-0">
+                    <tr>
+                      <th class="p-2 border-b">項目名稱</th>
+                      <th class="p-2 border-b text-center w-24">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="symptomManageTbody" class="divide-y text-slate-700">
+                    <tr><td colspan="2" class="text-center p-3 text-slate-400">載入中...</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div class="overflow-x-auto border border-slate-200 rounded-lg max-h-64 overflow-y-auto bg-white">
-              <table class="min-w-full text-xs text-left">
-                <thead class="bg-slate-100 text-slate-600 sticky top-0">
-                  <tr>
-                    <th class="p-2 border-b">項目名稱</th>
-                    <th class="p-2 border-b text-center w-24">操作</th>
-                  </tr>
-                </thead>
-                <tbody id="treatmentManageTbody" class="divide-y text-slate-700">
-                  <tr><td colspan="2" class="text-center p-3 text-slate-400">載入中...</td></tr>
-                </tbody>
-              </table>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50 space-y-3 flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="flex justify-between items-center pb-2 border-b border-slate-200">
+                <span class="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  處理方式
+                </span>
+                <span id="badgeCountTreatment" class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">0 項</span>
+              </div>
+              <div class="flex justify-end">
+                <button onclick="openAddCategoryItemModal('treatment', '處理方式')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1 rounded-lg font-bold shadow-xs">+ 新增</button>
+              </div>
+              <div class="overflow-x-auto border border-slate-200 rounded-lg max-h-72 overflow-y-auto bg-white custom-scroll">
+                <table class="min-w-full text-xs text-left">
+                  <thead class="bg-slate-100 text-slate-600 sticky top-0">
+                    <tr>
+                      <th class="p-2 border-b">項目名稱</th>
+                      <th class="p-2 border-b text-center w-24">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="treatmentManageTbody" class="divide-y text-slate-700">
+                    <tr><td colspan="2" class="text-center p-3 text-slate-400">載入中...</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
@@ -825,37 +795,95 @@
       `).join('');
     }
 
-    async function saveSemesterConfig() {
-      const id = document.getElementById('cfgSemesterId').value.trim();
-      const start_date = document.getElementById('cfgSemesterStart').value;
-      const end_date = document.getElementById('cfgSemesterEnd').value;
-      const is_default = document.getElementById('cfgSemesterIsDefault').checked;
+    function openAddSemesterModal() {
+      const bodyHtml = `
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">學期代碼 (如 115-1, 115-2) *</label>
+            <input type="text" id="modalSemId" placeholder="115-1" class="w-full p-2 border rounded-lg text-xs bg-white font-medium">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">開始日期 *</label>
+              <input type="date" id="modalSemStart" class="w-full p-2 border rounded-lg text-xs bg-white font-medium">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">結束日期 *</label>
+              <input type="date" id="modalSemEnd" class="w-full p-2 border rounded-lg text-xs bg-white font-medium">
+            </div>
+          </div>
+          <div class="flex items-center gap-2 pt-1">
+            <input type="checkbox" id="modalSemIsDefault" class="rounded text-teal-600">
+            <label for="modalSemIsDefault" class="text-xs text-slate-700 font-medium">設為系統當前預設學期</label>
+          </div>
+        </div>
+      `;
+      openModal('新增學期', bodyHtml, async () => {
+        const id = document.getElementById('modalSemId').value.trim();
+        const start_date = document.getElementById('modalSemStart').value;
+        const end_date = document.getElementById('modalSemEnd').value;
+        const is_default = document.getElementById('modalSemIsDefault').checked;
 
-      if (!id || !start_date || !end_date) return alert('請完整填寫學期代碼與起訖日期！');
+        if (!id || !start_date || !end_date) return alert('請完整填寫學期代碼與起訖日期！');
 
-      if (is_default) {
-        await dbClient.from('semesters').update({ is_default: false }).neq('id', id);
-      }
+        if (is_default) {
+          await dbClient.from('semesters').update({ is_default: false }).neq('id', id);
+        }
 
-      const { error } = await dbClient.from('semesters').upsert({ id, start_date, end_date, is_default });
-      if (error) {
-        alert('儲存失敗：' + error.message);
-      } else {
-        document.getElementById('cfgSemesterId').value = '';
-        document.getElementById('cfgSemesterStart').value = '';
-        document.getElementById('cfgSemesterEnd').value = '';
-        document.getElementById('cfgSemesterIsDefault').checked = false;
-        await loadSemesters();
-      }
+        const { error } = await dbClient.from('semesters').upsert({ id, start_date, end_date, is_default });
+        if (error) {
+          alert('儲存失敗：' + error.message);
+        } else {
+          closeModal();
+          await loadSemesters();
+        }
+      });
     }
 
     function editSemester(id) {
       const s = allSemesters.find(item => item.id === id);
       if (!s) return;
-      document.getElementById('cfgSemesterId').value = s.id;
-      document.getElementById('cfgSemesterStart').value = s.start_date;
-      document.getElementById('cfgSemesterEnd').value = s.end_date;
-      document.getElementById('cfgSemesterIsDefault').checked = s.is_default;
+      const bodyHtml = `
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">學期代碼</label>
+            <input type="text" id="modalEditSemId" value="${s.id}" disabled class="w-full p-2 border rounded-lg text-xs bg-slate-100 font-bold">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">開始日期 *</label>
+              <input type="date" id="modalEditSemStart" value="${s.start_date}" class="w-full p-2 border rounded-lg text-xs bg-white font-medium">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">結束日期 *</label>
+              <input type="date" id="modalEditSemEnd" value="${s.end_date}" class="w-full p-2 border rounded-lg text-xs bg-white font-medium">
+            </div>
+          </div>
+          <div class="flex items-center gap-2 pt-1">
+            <input type="checkbox" id="modalEditSemIsDefault" ${s.is_default ? 'checked' : ''} class="rounded text-teal-600">
+            <label for="modalEditSemIsDefault" class="text-xs text-slate-700 font-medium">設為系統當前預設學期</label>
+          </div>
+        </div>
+      `;
+      openModal('編輯學期設定', bodyHtml, async () => {
+        const start_date = document.getElementById('modalEditSemStart').value;
+        const end_date = document.getElementById('modalEditSemEnd').value;
+        const is_default = document.getElementById('modalEditSemIsDefault').checked;
+
+        if (!start_date || !end_date) return alert('請完整填寫起訖日期！');
+
+        if (is_default) {
+          await dbClient.from('semesters').update({ is_default: false }).neq('id', s.id);
+        }
+
+        const { error } = await dbClient.from('semesters').update({ start_date, end_date, is_default }).eq('id', s.id);
+        if (error) {
+          alert('修改失敗：' + error.message);
+        } else {
+          closeModal();
+          await loadSemesters();
+        }
+      });
     }
 
     async function setDefaultSemester(id) {
@@ -1290,37 +1318,44 @@
 
     function renderLocationsManageTable() {
       const tbody = document.getElementById('locationsManageTbody');
+      const badge = document.getElementById('badgeCountLocation');
+      if (badge) badge.innerText = `${allLocationsList.length} 項`;
       if (!tbody) return;
 
       if (allLocationsList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center p-4 text-slate-400">目前尚無地點資料。</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="2" class="text-center p-3 text-slate-400">無地點資料</td></tr>';
         return;
       }
 
-      tbody.innerHTML = allLocationsList.map((l, idx) => `
+      tbody.innerHTML = allLocationsList.map((l) => `
         <tr class="hover:bg-slate-50 transition">
-          <td class="p-2.5 font-bold text-teal-800">${idx + 1}</td>
-          <td class="p-2.5 font-medium text-slate-800">${l.name}</td>
-          <td class="p-2.5 text-center whitespace-nowrap">
-            <button onclick="editLocationPrompt('${l.id}', '${l.name}')" class="text-blue-600 hover:text-blue-800 mr-2.5 font-medium">編輯</button>
+          <td class="p-2 font-medium text-slate-800">${l.name}</td>
+          <td class="p-2 text-center whitespace-nowrap">
+            <button onclick="editLocationPrompt('${l.id}', '${l.name}')" class="text-blue-600 hover:text-blue-800 mr-2 font-medium">編輯</button>
             <button onclick="deleteLocation('${l.id}')" class="text-rose-600 hover:text-rose-800 font-medium">刪除</button>
           </td>
         </tr>
       `).join('');
     }
 
-    async function addSingleLocation() {
-      const input = document.getElementById('singleLocationInput');
-      const val = input.value.trim();
-      if (!val) return alert('請輸入地點名稱！');
-
-      const { error } = await dbClient.from('campus_locations').upsert([{ name: val, sort_order: 99 }], { onConflict: 'name' });
-      if (error) {
-        alert('儲存失敗：' + error.message);
-      } else {
-        input.value = '';
-        await initLocations();
-      }
+    function openAddSingleLocationModal() {
+      const bodyHtml = `
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">地點名稱 (例：體育館、圖書館)：</label>
+          <input type="text" id="modalAddLocInput" class="w-full p-2 border rounded-lg text-xs bg-white" placeholder="請輸入地點名稱">
+        </div>
+      `;
+      openModal('新增校園地點', bodyHtml, async () => {
+        const val = document.getElementById('modalAddLocInput').value.trim();
+        if (!val) return alert('請輸入地點名稱！');
+        const { error } = await dbClient.from('campus_locations').upsert([{ name: val, sort_order: 99 }], { onConflict: 'name' });
+        if (error) {
+          alert('儲存失敗：' + error.message);
+        } else {
+          closeModal();
+          await initLocations();
+        }
+      });
     }
 
     function openBatchLocationsModal() {
@@ -1416,17 +1451,24 @@
       `).join('');
     }
 
-    async function addCustomItem(category, inputId) {
-      const input = document.getElementById(inputId);
-      const val = input ? input.value.trim() : '';
-      if (!val) return;
-      const { error } = await dbClient.from('system_settings').upsert([{ category, item_name: val, sort_order: 99 }]);
-      if (error) {
-        alert('儲存失敗：' + error.message);
-      } else {
-        if (input) input.value = '';
-        await loadSystemSettings();
-      }
+    function openAddCategoryItemModal(category, categoryLabel) {
+      const bodyHtml = `
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">新增「${categoryLabel}」名稱：</label>
+          <input type="text" id="modalAddCategoryItemInput" class="w-full p-2 border rounded-lg text-xs bg-white" placeholder="請輸入項目名稱">
+        </div>
+      `;
+      openModal(`新增${categoryLabel}項目`, bodyHtml, async () => {
+        const val = document.getElementById('modalAddCategoryItemInput').value.trim();
+        if (!val) return alert('請輸入項目名稱！');
+        const { error } = await dbClient.from('system_settings').upsert([{ category, item_name: val, sort_order: 99 }]);
+        if (error) {
+          alert('儲存失敗：' + error.message);
+        } else {
+          closeModal();
+          await loadSystemSettings();
+        }
+      });
     }
 
     function editCustomItemPrompt(category, oldName) {
