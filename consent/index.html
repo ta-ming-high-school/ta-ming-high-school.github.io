@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新生健康檢查線上家長同意書與管理系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-100 min-h-screen py-8 px-4 font-sans text-slate-800 antialiased">
+
+  <nav class="max-w-4xl mx-auto flex justify-end items-center mb-4 gap-2">
+    <button id="navFormBtn" class="text-xs px-3 py-1.5 rounded-lg bg-blue-600 text-white font-medium shadow-sm transition">
+      📝 家長填寫
+    </button>
+    <button id="navAdminBtn" class="text-xs px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition">
+      🔒 管理後台
+    </button>
+  </nav>
+
+  <main id="parentSection" class="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-slate-200 p-6 md:p-8 space-y-6">
+    <header class="border-b border-slate-200 pb-5 text-center space-y-1">
+      <span class="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-blue-200">115學年度</span>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">臺中市大明高中</h1>
+      <h2 class="text-lg font-semibold text-blue-600">新生健康檢查家長通知單暨線上同意書</h2>
+      <div class="text-xs text-slate-500 pt-1 space-y-0.5">
+        <p>承辦醫療院所：澄清綜合醫院中港分院 ｜ 檢查日期：115年09月07日</p>
+        <p>洽詢電話：04-2539-1800 #308 (健康中心)</p>
+      </div>
+    </header>
+
+    <details class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-900 space-y-1">
+      <summary class="font-bold cursor-pointer select-none">檢查重要注意事項 (點擊展開/收合)</summary>
+      <ol class="list-decimal list-inside space-y-1 mt-2 leading-relaxed">
+        <li>檢查前一天請確實洗淨身體及頭髮。</li>
+        <li>當日可清淡飲食、喝開水，但請避免含糖或油膩飲料。</li>
+        <li>尿液採現場收集；適逢生理期之女同學照樣檢驗，當日告知檢驗人員即可。</li>
+        <li>胸前請勿配戴金屬物品與項鍊；視力檢查請配戴眼鏡。</li>
+        <li>選擇在校外自行受檢者，請於 09/30 前將檢查報告繳回健康中心。</li>
+      </ol>
+    </details>
+
+    <form id="consentForm" class="space-y-6">
+      <fieldset class="border border-slate-200 rounded-xl p-5 bg-slate-50/50 space-y-4">
+        <legend class="text-sm font-bold text-slate-700 px-2">學生基本資料</legend>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">班級 <span class="text-red-500">*</span></label>
+            <input type="text" id="className" required placeholder="如：高一甲" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 bg-white">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">座號 <span class="text-red-500">*</span></label>
+            <input type="number" id="seatNumber" required min="1" max="99" placeholder="如：12" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 bg-white">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">學生姓名 <span class="text-red-500">*</span></label>
+            <input type="text" id="studentName" required placeholder="請輸入全名" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 bg-white">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">生理性別 <span class="text-red-500">*</span></label>
+            <select id="gender" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="">請選擇性別</option>
+              <option value="male">男</option>
+              <option value="female">女</option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="border border-slate-200 rounded-xl p-5 space-y-4">
+        <legend class="text-sm font-bold text-slate-700 px-2">涉及隱私檢查項目意願調查</legend>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+          <div>
+            <span class="text-sm font-medium text-slate-800">1. 胸部檢查</span>
+            <p class="text-xs text-slate-400">心肺聽診（備有屏風及護理人員）</p>
+          </div>
+          <div class="space-x-4 text-sm shrink-0">
+            <label class="cursor-pointer inline-flex items-center"><input type="radio" name="chestConsent" value="true" required class="mr-1.5 text-blue-600">同意</label>
+            <label class="cursor-pointer inline-flex items-center"><input type="radio" name="chestConsent" value="false" class="mr-1.5 text-blue-600">不同意 (自行外檢)</label>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+          <div>
+            <span class="text-sm font-medium text-slate-800">2. 腹部檢查</span>
+            <p class="text-xs text-slate-400">觸診與叩診、異常腫大檢查</p>
+          </div>
+          <div class="space-x-4 text-sm shrink-0">
+            <label class="cursor-pointer inline-flex items-center"><input type="radio" name="abdomenConsent" value="true" required class="mr-1.5 text-blue-600">同意</label>
+            <label class="cursor-pointer inline-flex items-center"><input type="radio" name="abdomenConsent" value="false" class="mr-1.5 text-blue-600">不同意 (自行外檢)</label>
+          </div>
+        </div>
+
+        <div id="urogenitalBlock" class="flex flex-col sm:flex-row sm:items-center justify-between transition-opacity gap-2">
+          <div>
+            <span class="text-sm font-medium text-slate-800">3. 泌尿生殖器檢查 <span class="text-xs text-blue-600">(男生限定)</span></span>
+            <p class="text-xs text-slate-400">包皮異常、精索靜脈曲張（女性免填）</p>
+          </div>
+          <div class="space-x-4 text-sm shrink-0">
+            <label class="cursor-pointer inline-flex items-center"><input type="radio" name="urogenitalConsent" value="true" required class="mr-1.5 text-blue-600">同意</label>
+            <label class="cursor-pointer inline-flex items-center"><input type="radio" name="urogenitalConsent" value="false" class="mr-1.5 text-blue-600">不同意 (自行外檢)</label>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="border border-slate-200 rounded-xl p-5 space-y-4">
+        <legend class="text-sm font-bold text-slate-700 px-2">家長簽署確認</legend>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">家長姓名 <span class="text-red-500">*</span></label>
+            <input type="text" id="parentName" required placeholder="請簽署全名" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">與學生關係 <span class="text-red-500">*</span></label>
+            <select id="relationship" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="父親">父親</option>
+              <option value="母親">母親</option>
+              <option value="監護人/其他">監護人 / 其他</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">其他需連繫事項 (選填)</label>
+          <input type="text" id="contactNote" placeholder="如有特殊病史或需備註請填寫" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-xs font-semibold text-slate-600">家長手寫數位簽名 <span class="text-red-500">*</span></label>
+            <button type="button" id="clearPad" class="text-xs text-red-500 hover:text-red-700">清除重簽</button>
+          </div>
+          <div class="border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 overflow-hidden flex justify-center">
+            <canvas id="signaturePad" width="500" height="150" class="w-full touch-none cursor-crosshair"></canvas>
+          </div>
+        </div>
+      </fieldset>
+
+      <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition disabled:opacity-50">
+        確認提交回條
+      </button>
+    </form>
+  </main>
+
+  <div id="loginModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center space-y-4">
+      <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold">🔒</div>
+      <h2 class="text-lg font-bold text-slate-900">健康中心後台登入</h2>
+      <p class="text-xs text-slate-500">請輸入管理員 PIN 碼查看名冊</p>
+      <input type="password" id="adminPin" placeholder="預設密碼：8888" class="w-full border rounded-lg p-2.5 text-center text-sm tracking-widest focus:ring-2 focus:ring-blue-500 outline-none">
+      <div class="flex gap-2">
+        <button id="closeLoginBtn" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">取消</button>
+        <button id="loginBtn" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 rounded-lg transition">驗證登入</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminSection" class="max-w-6xl mx-auto space-y-6 hidden">
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">新生健康檢查名冊管理</h1>
+        <p class="text-xs text-slate-500 mt-1">115學年度 澄清醫院健檢回條名單</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="refreshBtn" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-semibold text-slate-700 transition">🔄 重新整理</button>
+        <button id="exportBtn" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition">📥 匯出 Excel</button>
+        <button id="logoutBtn" class="px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-semibold transition">登出</button>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm"><span class="text-xs text-slate-500">已繳交總數</span><div id="statTotal" class="text-2xl font-bold text-slate-900 mt-1">0</div></div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm"><span class="text-xs text-amber-600">胸部外檢</span><div id="statChest" class="text-2xl font-bold text-amber-600 mt-1">0</div></div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm"><span class="text-xs text-amber-600">腹部外檢</span><div id="statAbdomen" class="text-2xl font-bold text-amber-600 mt-1">0</div></div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm"><span class="text-xs text-amber-600">泌尿外檢 (男)</span><div id="statUro" class="text-2xl font-bold text-amber-600 mt-1">0</div></div>
+    </div>
+
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
+      <div class="flex flex-wrap gap-2 w-full md:w-auto">
+        <select id="classFilter" class="border border-slate-300 rounded-lg p-2 text-xs outline-none"><option value="ALL">全部班級</option></select>
+        <select id="consentFilter" class="border border-slate-300 rounded-lg p-2 text-xs outline-none">
+          <option value="ALL">全部狀態</option>
+          <option value="OUTSIDE">含有外檢項目</option>
+          <option value="ALL_AGREE">全數同意在校檢驗</option>
+        </select>
+      </div>
+      <input type="text" id="searchInput" placeholder="搜尋學生姓名、座號..." class="w-full md:w-64 border border-slate-300 rounded-lg p-2 text-xs outline-none">
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-700">
+          <thead class="bg-slate-100 text-slate-600 border-b border-slate-200 font-bold uppercase">
+            <tr>
+              <th class="p-3">班級</th><th class="p-3">座號</th><th class="p-3">姓名</th><th class="p-3">性別</th>
+              <th class="p-3 text-center">胸部</th><th class="p-3 text-center">腹部</th><th class="p-3 text-center">泌尿生殖</th>
+              <th class="p-3">家長 (關係)</th><th class="p-3">備註</th><th class="p-3 text-center">簽名</th><th class="p-3">填寫時間</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="sigModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-5 space-y-4 text-center">
+      <h3 class="font-bold text-slate-800 text-sm" id="modalTitle">家長簽名</h3>
+      <div class="border rounded-xl bg-slate-50 p-2 flex justify-center">
+        <img id="modalImg" src="" alt="簽名" class="max-h-48 object-contain">
+      </div>
+      <button onclick="document.getElementById('sigModal').classList.add('hidden')" class="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg">關閉</button>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://fthoizhjbyzgcyrpundm.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_c5fwSgg67r-BALHzLxO8pw_v8MgKQqg';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const ADMIN_PIN = "8888";
+
+    let allData = [];
+    let isAdminLoggedIn = false;
+
+    const parentSection = document.getElementById('parentSection');
+    const adminSection = document.getElementById('adminSection');
+    const loginModal = document.getElementById('loginModal');
+
+    document.getElementById('navFormBtn').addEventListener('click', () => {
+      parentSection.classList.remove('hidden');
+      adminSection.classList.add('hidden');
+    });
+
+    document.getElementById('navAdminBtn').addEventListener('click', () => {
+      if (isAdminLoggedIn) {
+        parentSection.classList.add('hidden');
+        adminSection.classList.remove('hidden');
+      } else {
+        loginModal.classList.remove('hidden');
+        loginModal.classList.add('flex');
+      }
+    });
+
+    document.getElementById('closeLoginBtn').addEventListener('click', () => {
+      loginModal.classList.add('hidden');
+      loginModal.classList.remove('flex');
+    });
+
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      const pin = document.getElementById('adminPin').value;
+      if (pin === ADMIN_PIN) {
+        isAdminLoggedIn = true;
+        loginModal.classList.add('hidden');
+        loginModal.classList.remove('flex');
+        parentSection.classList.add('hidden');
+        adminSection.classList.remove('hidden');
+        loadData();
+      } else {
+        alert('密碼錯誤！');
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      isAdminLoggedIn = false;
+      document.getElementById('adminPin').value = '';
+      adminSection.classList.add('hidden');
+      parentSection.classList.remove('hidden');
+    });
+
+    const genderSelect = document.getElementById('gender');
+    const urogenitalBlock = document.getElementById('urogenitalBlock');
+    const urogenitalInputs = document.querySelectorAll('input[name="urogenitalConsent"]');
+
+    genderSelect.addEventListener('change', (e) => {
+      const isFemale = e.target.value === 'female';
+      urogenitalBlock.classList.toggle('opacity-30', isFemale);
+      urogenitalBlock.classList.toggle('pointer-events-none', isFemale);
+      urogenitalInputs.forEach(i => { i.checked = false; i.required = !isFemale; });
+    });
+
+    const canvas = document.getElementById('signaturePad');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false, hasDrawn = false;
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: (clientX - rect.left) * (canvas.width / rect.width),
+        y: (clientY - rect.top) * (canvas.height / rect.height)
+      };
+    }
+    function startDraw(e) { isDrawing = true; hasDrawn = true; const pos = getPos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); e.preventDefault(); }
+    function draw(e) { if (!isDrawing) return; const pos = getPos(e); ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.strokeStyle = '#0f172a'; ctx.lineTo(pos.x, pos.y); ctx.stroke(); e.preventDefault(); }
+    function stopDraw() { isDrawing = false; }
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('touchstart', startDraw);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', stopDraw);
+
+    document.getElementById('clearPad').addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      hasDrawn = false;
+    });
+
+    document.getElementById('consentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!hasDrawn) return alert('請家長於簽名區手寫簽名後再送出。');
+
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = '正在處理並上傳...';
+
+      try {
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        const fileName = `sig_${Date.now()}_${Math.random().toString(36).substring(7)}.png`;
+
+        const { error: uploadErr } = await supabaseClient.storage.from('signatures').upload(fileName, blob, { contentType: 'image/png' });
+        if (uploadErr) throw uploadErr;
+
+        const { data: publicData } = supabaseClient.storage.from('signatures').getPublicUrl(fileName);
+
+        const payload = {
+          class_name: document.getElementById('className').value.trim(),
+          seat_number: parseInt(document.getElementById('seatNumber').value, 10),
+          student_name: document.getElementById('studentName').value.trim(),
+          gender: document.getElementById('gender').value,
+          chest_consent: document.querySelector('input[name="chestConsent"]:checked').value === 'true',
+          abdomen_consent: document.querySelector('input[name="abdomenConsent"]:checked').value === 'true',
+          urogenital_consent: document.getElementById('gender').value === 'male' ? document.querySelector('input[name="urogenitalConsent"]:checked').value === 'true' : null,
+          parent_name: document.getElementById('parentName').value.trim(),
+          relationship: document.getElementById('relationship').value,
+          contact_note: document.getElementById('contactNote').value.trim() || null,
+          signature_url: publicData.publicUrl
+        };
+
+        const { error: insertErr } = await supabaseClient.from('health_consents').insert([payload]);
+        if (insertErr) throw insertErr;
+
+        alert('同意書填寫完成並已成功送出！');
+        document.getElementById('consentForm').reset();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        hasDrawn = false;
+      } catch (err) {
+        alert('提交失敗：' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = '確認提交回條';
+      }
+    });
+
+    async function loadData() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center p-8 text-slate-400">載入中...</td></tr>';
+      
+      const { data, error } = await supabaseClient.from('health_consents').select('*').order('class_name').order('seat_number');
+      if (error) return alert('載入失敗：' + error.message);
+
+      allData = data || [];
+      
+      const classSelect = document.getElementById('classFilter');
+      const classes = Array.from(new Set(allData.map(d => d.class_name))).filter(Boolean);
+      classSelect.innerHTML = '<option value="ALL">全部班級</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
+
+      document.getElementById('statTotal').innerText = allData.length;
+      document.getElementById('statChest').innerText = allData.filter(d => !d.chest_consent).length;
+      document.getElementById('statAbdomen').innerText = allData.filter(d => !d.abdomen_consent).length;
+      document.getElementById('statUro').innerText = allData.filter(d => d.gender === 'male' && d.urogenital_consent === false).length;
+
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      const classFilter = document.getElementById('classFilter').value;
+      const consentFilter = document.getElementById('consentFilter').value;
+      const search = document.getElementById('searchInput').value.trim().toLowerCase();
+
+      const filtered = allData.filter(row => {
+        const matchClass = (classFilter === 'ALL' || row.class_name === classFilter);
+        const matchSearch = (!search || row.student_name.toLowerCase().includes(search) || String(row.seat_number).includes(search) || row.class_name.toLowerCase().includes(search));
+        const hasDisagree = (!row.chest_consent || !row.abdomen_consent || (row.gender === 'male' && row.urogenital_consent === false));
+        let matchConsent = true;
+        if (consentFilter === 'OUTSIDE') matchConsent = hasDisagree;
+        if (consentFilter === 'ALL_AGREE') matchConsent = !hasDisagree;
+        return matchClass && matchSearch && matchConsent;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center p-8 text-slate-400">查無名冊資料</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(row => `
+        <tr class="hover:bg-slate-50">
+          <td class="p-3 font-semibold">${row.class_name}</td>
+          <td class="p-3">${row.seat_number}</td>
+          <td class="p-3 font-bold">${row.student_name}</td>
+          <td class="p-3">${row.gender === 'male' ? '男' : '女'}</td>
+          <td class="p-3 text-center">${row.chest_consent ? '<span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">同意</span>' : '<span class="text-amber-800 bg-amber-100 px-2 py-0.5 rounded font-bold">外檢</span>'}</td>
+          <td class="p-3 text-center">${row.abdomen_consent ? '<span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">同意</span>' : '<span class="text-amber-800 bg-amber-100 px-2 py-0.5 rounded font-bold">外檢</span>'}</td>
+          <td class="p-3 text-center">${row.gender === 'female' ? '-' : (row.urogenital_consent ? '<span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">同意</span>' : '<span class="text-amber-800 bg-amber-100 px-2 py-0.5 rounded font-bold">外檢</span>')}</td>
+          <td class="p-3">${row.parent_name} (${row.relationship})</td>
+          <td class="p-3 text-slate-400 truncate max-w-[120px]" title="${row.contact_note || ''}">${row.contact_note || '-'}</td>
+          <td class="p-3 text-center"><button onclick="viewSig('${row.student_name}', '${row.signature_url}')" class="text-blue-600 underline">查看</button></td>
+          <td class="p-3 text-slate-400 text-[11px]">${new Date(row.submitted_at).toLocaleDateString()}</td>
+        </tr>
+      `).join('');
+    }
+
+    function viewSig(name, url) {
+      document.getElementById('modalTitle').innerText = `${name} 家長簽名`;
+      document.getElementById('modalImg').src = url;
+      document.getElementById('sigModal').classList.remove('hidden');
+      document.getElementById('sigModal').classList.add('flex');
+    }
+
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      if (allData.length === 0) return alert('無資料可匯出');
+      let csv = '\uFEFF班級,座號,姓名,性別,胸部檢查,腹部檢查,泌尿生殖檢查,家長姓名,關係,備註,簽名圖檔,填寫時間\n';
+      allData.forEach(r => {
+        csv += `"${r.class_name}",${r.seat_number},"${r.student_name}","${r.gender === 'male' ? '男' : '女'}","${r.chest_consent ? '同意' : '外檢'}","${r.abdomen_consent ? '同意' : '外檢'}","${r.gender === 'male' ? (r.urogenital_consent ? '同意' : '外檢') : '女性免填'}","${r.parent_name}","${r.relationship}","${(r.contact_note || '').replace(/"/g, '""')}","${r.signature_url}","${r.submitted_at}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `健檢同意書名冊_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', loadData);
+    document.getElementById('classFilter').addEventListener('change', renderTable);
+    document.getElementById('consentFilter').addEventListener('change', renderTable);
+    document.getElementById('searchInput').addEventListener('input', renderTable);
+  </script>
+</body>
+</html>
