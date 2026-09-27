@@ -99,7 +99,7 @@ function renderLocationSelect() {
 
   if (locations.length > 0) {
     locBox.innerHTML = `
-      <select id="location_field" class="w-full p-2 border rounded-lg bg-white text-sm">
+      <select id="location_field" class="w-full p-2 border rounded-lg bg-white text-sm font-medium">
         <option value="">-- 選取地點 --</option>
         ${locations.map(l => `<option value="${l}">${l}</option>`).join('')}
       </select>`;
@@ -274,7 +274,7 @@ async function onStudentSelectChange(studentId) {
 
   const { data: records, error } = await dbClient
     .from('nursing_records')
-    .select('id, semester, record_date, record_time, location, body_part, side, body_temperature, rest_minutes, accident_types, symptom_types, treatments, note')
+    .select('id, semester, record_date, record_time, location, body_part, side, body_temperature, rest_minutes, accident_types, symptom_types, treatments, note, classes(name)')
     .eq('student_id', studentId)
     .order('record_date', { ascending: false })
     .order('record_time', { ascending: false });
@@ -297,11 +297,13 @@ async function onStudentSelectChange(studentId) {
     const siteText = (r.side ? r.side + '側 ' : '') + (r.body_part || '-');
     const categoriesText = [...(r.accident_types || []), ...(r.symptom_types || [])].join(', ') || '-';
     const treatmentsText = (r.treatments || []).join(', ') || '-';
+    const semClassText = `[${r.semester || ''}] ${r.classes?.name || ''}`;
 
     return `
       <tr class="hover:bg-slate-50 transition">
         <td class="p-2 border whitespace-nowrap font-medium text-slate-800">${r.record_date}</td>
         <td class="p-2 border whitespace-nowrap text-slate-500">${r.record_time ? r.record_time.slice(0, 5) : '-'}</td>
+        <td class="p-2 border whitespace-nowrap text-teal-800 font-semibold">${semClassText}</td>
         <td class="p-2 border whitespace-nowrap">${r.location || '-'}</td>
         <td class="p-2 border text-slate-700 whitespace-nowrap">${siteText}</td>
         <td class="p-2 border whitespace-nowrap text-teal-700 font-medium">${vitalText}</td>
@@ -319,6 +321,7 @@ async function onStudentSelectChange(studentId) {
           <tr>
             <th class="p-2 border whitespace-nowrap">日期</th>
             <th class="p-2 border whitespace-nowrap">時間</th>
+            <th class="p-2 border whitespace-nowrap">學期/班級</th>
             <th class="p-2 border whitespace-nowrap">地點</th>
             <th class="p-2 border whitespace-nowrap">部位</th>
             <th class="p-2 border whitespace-nowrap">體溫/休息</th>
@@ -502,7 +505,13 @@ function renderFilteredRecordsTable() {
   }
 
   if (filtered.length === 0) {
-    const rangeText = (startDate || endDate) ? `在指定日期區間 (${startDate || '起'} ~ ${endDate || '訖'}) ` : '';
+    let rangeText = '';
+    if (startDate && endDate && startDate === endDate) {
+      rangeText = `在指定日期 (${startDate}) `;
+    } else if (startDate || endDate) {
+      rangeText = `在指定日期區間 (${startDate || '起'} ~ ${endDate || '訖'}) `;
+    }
+
     tbody.innerHTML = `<tr><td colspan="12" class="text-center p-4 text-slate-400">${rangeText}查無登記紀錄</td></tr>`;
     return;
   }
@@ -786,33 +795,36 @@ function exportYearAnalysisReport() {
   const symItems = symptoms;
   const treatItems = treatments;
 
-  const totalCols = 8 + locItems.length + bpItems.length + accItems.length + symItems.length + treatItems.length + 1;
+  const locStart = 8;
+  const bpStart = locStart + locItems.length;
+  const accStart = bpStart + bpItems.length;
+  const symStart = accStart + accItems.length;
+  const treatStart = symStart + symItems.length;
+  const restCol = treatStart + treatItems.length;
+  const totalCols = restCol + 1;
 
   const row0 = Array(totalCols).fill('');
   row0[0] = `潭子區-私立大明高中_${sem}_學生傷病統計分析`;
 
   const row1 = Array(totalCols).fill('');
   row1[0] = '項/學期'; row1[1] = '月份'; row1[2] = '性別'; row1[5] = '時間';
-  let cur = 8;
-  row1[cur] = '地點'; cur += locItems.length;
-  row1[cur] = '部位'; cur += bpItems.length;
-  row1[cur] = '受傷種類'; cur += accItems.length + symItems.length;
-  row1[cur] = '處理方式'; cur += treatItems.length;
-  row1[cur] = '觀察時間．分';
+  if (locItems.length > 0) row1[locStart] = '地點';
+  if (bpItems.length > 0) row1[bpStart] = '部位';
+  if (accItems.length > 0 || symItems.length > 0) row1[accStart] = '受傷種類';
+  if (treatItems.length > 0) row1[treatStart] = '處理方式';
+  row1[restCol] = '觀察時間．分';
 
   const row2 = Array(totalCols).fill('');
   row2[2] = '合計'; row2[3] = '男'; row2[4] = '女'; row2[5] = '上午'; row2[6] = '中午'; row2[7] = '下午';
-  cur = 8;
-  locItems.forEach((l, i) => row2[cur + i] = l); cur += locItems.length;
-  bpItems.forEach((bp, i) => row2[cur + i] = bp); cur += bpItems.length;
-  row2[cur] = '意外傷害';
-  row2[cur + accItems.length] = '症狀'; cur += accItems.length + symItems.length;
-  treatItems.forEach((tr, i) => row2[cur + i] = tr);
+  locItems.forEach((l, i) => row2[locStart + i] = l);
+  bpItems.forEach((bp, i) => row2[bpStart + i] = bp);
+  if (accItems.length > 0) row2[accStart] = '意外傷害';
+  if (symItems.length > 0) row2[symStart] = '症狀';
+  treatItems.forEach((tr, i) => row2[treatStart + i] = tr);
 
   const row3 = Array(totalCols).fill('');
-  cur = 8 + locItems.length + bpItems.length;
-  accItems.forEach((a, i) => row3[cur + i] = a);
-  symItems.forEach((s, i) => row3[cur + accItems.length + i] = s);
+  accItems.forEach((a, i) => row3[accStart + i] = a);
+  symItems.forEach((s, i) => row3[symStart + i] = s);
 
   const monthList = sem.includes('1') ? [8, 9, 10, 11, 12, 1] : [2, 3, 4, 5, 6, 7];
   const dataRows = [];
@@ -835,12 +847,11 @@ function exportYearAnalysisReport() {
       const tp = getTimePeriod(r.record_time);
       if (tp === '上午') am++; else if (tp === '中午') noon++; else pm++;
 
-      let cOffset = 8;
-      locItems.forEach((loc, idx) => { if ((r.location || '') === loc) rRow[cOffset + idx]++; }); cOffset += locItems.length;
-      bpItems.forEach((bp, idx) => { if ((r.body_part || '').includes(bp)) rRow[cOffset + idx]++; }); cOffset += bpItems.length;
-      accItems.forEach((acc, idx) => { if ((r.accident_types || []).includes(acc)) rRow[cOffset + idx]++; }); cOffset += accItems.length;
-      symItems.forEach((sym, idx) => { if ((r.symptom_types || []).includes(sym)) rRow[cOffset + idx]++; }); cOffset += symItems.length;
-      treatItems.forEach((tr, idx) => { if ((r.treatments || []).includes(tr)) rRow[cOffset + idx]++; });
+      locItems.forEach((loc, idx) => { if ((r.location || '') === loc) rRow[locStart + idx]++; });
+      bpItems.forEach((bp, idx) => { if ((r.body_part || '').includes(bp)) rRow[bpStart + idx]++; });
+      accItems.forEach((acc, idx) => { if ((r.accident_types || []).includes(acc)) rRow[accStart + idx]++; });
+      symItems.forEach((sym, idx) => { if ((r.symptom_types || []).includes(sym)) rRow[symStart + idx]++; });
+      treatItems.forEach((tr, idx) => { if ((r.treatments || []).includes(tr)) rRow[treatStart + idx]++; });
     });
 
     rRow[2] = mM + mF;
@@ -849,7 +860,7 @@ function exportYearAnalysisReport() {
     rRow[5] = am;
     rRow[6] = noon;
     rRow[7] = pm;
-    rRow[totalCols - 1] = mTotalMins;
+    rRow[restCol] = mTotalMins;
 
     dataRows.push(rRow);
   });
@@ -1202,7 +1213,7 @@ async function loadAllSemesterStudents() {
 
 function filterStudentTable() {
   const manageSelect = document.getElementById('manageClassSelect');
-  const selectedClassId = manageSelect ? manageSelect.value : '';
+  const selectedClassId = manageSelect ? manageClassSelect.value : '';
   const searchInput = document.getElementById('searchStudentInput');
   const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
