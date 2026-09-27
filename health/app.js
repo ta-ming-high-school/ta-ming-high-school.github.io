@@ -87,7 +87,7 @@ function handleHashRouting() {
 window.addEventListener('hashchange', handleHashRouting);
 
 async function loadSettingsViewData() {
-  await loadSemesters();
+  await loadSemesters(false);
   await initClasses();
   await loadSystemSettings();
   await loadAllSemesterStudents();
@@ -880,7 +880,10 @@ function exportYearAnalysisReport() {
   XLSX.writeFile(wb, `潭子區-私立大明高中_${sem}_學生傷病統計分析.xlsx`);
 }
 
-async function loadSemesters() {
+/**
+ * 依當日日期自動決定當前學期（若 userChosenId 存在則維持手動選定）
+ */
+async function loadSemesters(autoSelectByDate = true) {
   const { data, error } = await dbClient.from('semesters').select('*');
   const select = document.getElementById('globalSemesterSelect');
 
@@ -890,21 +893,39 @@ async function loadSemesters() {
     select.innerHTML = '<option value="">請先至系統設定新增學期</option>';
     document.querySelectorAll('.currentSemText').forEach(el => el.innerText = '--');
     document.getElementById('labelSemesterRange').innerText = '-';
-  } else {
-    allSemesters = data.sort((a, b) => a.id.localeCompare(b.id, 'zh-Hant', { numeric: true }));
-    const def = allSemesters.find(s => s.is_default) || allSemesters[0];
-    currentSemesterObj = def;
-
-    select.innerHTML = allSemesters.map(s => `
-      <option value="${s.id}" ${s.id === def.id ? 'selected' : ''}>
-        ${s.id} ${s.is_default ? '(預設)' : ''}
-      </option>
-    `).join('');
-
-    updateSemesterDisplay();
+    renderSemestersTable();
+    return;
   }
 
+  // 學期依代碼從小到大排序 (如 113-1, 113-2, 114-1, 114-2...)
+  allSemesters = data.sort((a, b) => a.id.localeCompare(b.id, 'zh-Hant', { numeric: true }));
+
+  const today = new Date().toISOString().split('T')[0];
+
+  // 自動找出涵蓋今日日期的學期
+  const matchedByDate = allSemesters.find(s => today >= s.start_date && today <= s.end_date);
+
+  if (autoSelectByDate || !currentSemesterObj) {
+    // 依今日匹配，若今日剛好在寒暑假無任何匹配，則選擇最新的學期
+    currentSemesterObj = matchedByDate || allSemesters[allSemesters.length - 1];
+  } else {
+    // 若使用者已手動選定某學期，檢查該學期是否依然存在
+    const stillExists = allSemesters.find(s => s.id === currentSemesterObj.id);
+    currentSemesterObj = stillExists || matchedByDate || allSemesters[allSemesters.length - 1];
+  }
+
+  select.innerHTML = allSemesters.map(s => {
+    const isCurrentActive = (today >= s.start_date && today <= s.end_date);
+    const labelSuffix = isCurrentActive ? ' (當前學期)' : '';
+    return `
+      <option value="${s.id}" ${s.id === currentSemesterObj.id ? 'selected' : ''}>
+        ${s.id}${labelSuffix}
+      </option>
+    `;
+  }).join('');
+
   renderSemestersTable();
+  updateSemesterDisplay();
 }
 
 function onSemesterChange() {
@@ -945,21 +966,31 @@ function renderSemestersTable() {
     return;
   }
 
-  tbody.innerHTML = allSemesters.map(s => `
-    <tr class="hover:bg-slate-50">
-      <td class="p-2.5 font-bold text-teal-800">${s.id}</td>
-      <td class="p-2.5">${s.start_date}</td>
-      <td class="p-2.5">${s.end_date}</td>
-      <td class="p-2.5 text-center">
-        ${s.is_default ? '<span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold">預設學期</span>' : 
-          `<button onclick="setDefaultSemester('${s.id}')" class="text-slate-400 hover:text-teal-700 text-xs">設為預設</button>`}
-      </td>
-      <td class="p-2.5 text-center">
-        <button onclick="editSemester('${s.id}')" class="text-blue-600 hover:underline mr-2">編輯</button>
-        ${!s.is_default ? `<button onclick="deleteSemester('${s.id}')" class="text-rose-600 hover:underline">刪除</button>` : ''}
-      </td>
-    </tr>
-  `).join('');
+  const today = new Date().toISOString().split('T')[0];
+
+  tbody.innerHTML = allSemesters.map(s => {
+    let statusBadge = '';
+    if (today >= s.start_date && today <= s.end_date) {
+      statusBadge = '<span class="bg-emerald-100 text-emerald-800 text-[10px] px-2.5 py-0.5 rounded-full font-bold">● 進行中 (當前)</span>';
+    } else if (today < s.start_date) {
+      statusBadge = '<span class="bg-blue-100 text-blue-800 text-[10px] px-2.5 py-0.5 rounded-full font-bold">尚未開始</span>';
+    } else {
+      statusBadge = '<span class="bg-slate-100 text-slate-500 text-[10px] px-2.5 py-0.5 rounded-full font-bold">已結束</span>';
+    }
+
+    return `
+      <tr class="hover:bg-slate-50">
+        <td class="p-2.5 font-bold text-teal-800">${s.id}</td>
+        <td class="p-2.5">${s.start_date}</td>
+        <td class="p-2.5">${s.end_date}</td>
+        <td class="p-2.5 text-center">${statusBadge}</td>
+        <td class="p-2.5 text-center">
+          <button onclick="editSemester('${s.id}')" class="text-blue-600 hover:underline mr-2">編輯</button>
+          <button onclick="deleteSemester('${s.id}')" class="text-rose-600 hover:underline">刪除</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
 function openAddSemesterModal() {
@@ -979,30 +1010,25 @@ function openAddSemesterModal() {
           <input type="date" id="modalSemEnd" class="w-full p-2 border rounded-lg text-xs bg-white font-medium">
         </div>
       </div>
-      <div class="flex items-center gap-2 pt-1">
-        <input type="checkbox" id="modalSemIsDefault" class="rounded text-teal-600">
-        <label for="modalSemIsDefault" class="text-xs text-slate-700 font-medium">設為系統當前預設學期</label>
-      </div>
+      <p class="text-[11px] text-slate-400">系統將依日期區間自動判斷當前學期，無須手動指定預設。</p>
     </div>
   `;
   openModal('新增學期', bodyHtml, async () => {
     const id = document.getElementById('modalSemId').value.trim();
     const start_date = document.getElementById('modalSemStart').value;
     const end_date = document.getElementById('modalSemEnd').value;
-    const is_default = document.getElementById('modalSemIsDefault').checked;
 
     if (!id || !start_date || !end_date) return alert('請完整填寫學期代碼與起訖日期！');
+    if (start_date > end_date) return alert('開始日期不能晚於結束日期！');
 
-    if (is_default) {
-      await dbClient.from('semesters').update({ is_default: false }).neq('id', id);
-    }
-
-    const { error } = await dbClient.from('semesters').upsert({ id, start_date, end_date, is_default });
+    const { error } = await dbClient.from('semesters').upsert({ id, start_date, end_date });
     if (error) {
       alert('儲存失敗：' + error.message);
     } else {
       closeModal();
-      await loadSemesters();
+      await loadSemesters(true);
+      await initClasses();
+      fetchRecords();
     }
   });
 }
@@ -1026,43 +1052,32 @@ function editSemester(id) {
           <input type="date" id="modalEditSemEnd" value="${s.end_date}" class="w-full p-2 border rounded-lg text-xs bg-white font-medium">
         </div>
       </div>
-      <div class="flex items-center gap-2 pt-1">
-        <input type="checkbox" id="modalEditSemIsDefault" ${s.is_default ? 'checked' : ''} class="rounded text-teal-600">
-        <label for="modalEditSemIsDefault" class="text-xs text-slate-700 font-medium">設為系統當前預設學期</label>
-      </div>
     </div>
   `;
   openModal('編輯學期設定', bodyHtml, async () => {
     const start_date = document.getElementById('modalEditSemStart').value;
     const end_date = document.getElementById('modalEditSemEnd').value;
-    const is_default = document.getElementById('modalEditSemIsDefault').checked;
 
     if (!start_date || !end_date) return alert('請完整填寫起訖日期！');
+    if (start_date > end_date) return alert('開始日期不能晚於結束日期！');
 
-    if (is_default) {
-      await dbClient.from('semesters').update({ is_default: false }).neq('id', s.id);
-    }
-
-    const { error } = await dbClient.from('semesters').update({ start_date, end_date, is_default }).eq('id', s.id);
+    const { error } = await dbClient.from('semesters').update({ start_date, end_date }).eq('id', s.id);
     if (error) {
       alert('修改失敗：' + error.message);
     } else {
       closeModal();
-      await loadSemesters();
+      await loadSemesters(false);
+      updateSemesterDisplay();
     }
   });
-}
-
-async function setDefaultSemester(id) {
-  await dbClient.from('semesters').update({ is_default: false }).neq('id', id);
-  await dbClient.from('semesters').update({ is_default: true }).eq('id', id);
-  await loadSemesters();
 }
 
 async function deleteSemester(id) {
   if (!confirm(`確定刪除學期 [${id}] 嗎？注意：該學期的班級與紀錄將保留，但無法從此處選取。`)) return;
   await dbClient.from('semesters').delete().eq('id', id);
-  await loadSemesters();
+  await loadSemesters(true);
+  await initClasses();
+  fetchRecords();
 }
 
 async function initClasses() {
@@ -1213,7 +1228,7 @@ async function loadAllSemesterStudents() {
 
 function filterStudentTable() {
   const manageSelect = document.getElementById('manageClassSelect');
-  const selectedClassId = manageSelect ? manageClassSelect.value : '';
+  const selectedClassId = manageSelect ? manageSelect.value : '';
   const searchInput = document.getElementById('searchStudentInput');
   const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
@@ -1626,7 +1641,7 @@ function renderCheckboxes(containerId, list, name) {
   }
 
   handleHashRouting();
-  await loadSemesters();
+  await loadSemesters(true);
   await loadSystemSettings();
   await initClasses();
   await fetchRecords();

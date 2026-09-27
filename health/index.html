@@ -33,7 +33,7 @@
         <div class="flex items-center bg-slate-50 rounded-xl px-2.5 py-1.5 border border-slate-300">
           <span class="text-xs font-bold text-slate-600 mr-1.5">當前學期：</span>
           <select id="globalSemesterSelect" onchange="onSemesterChange()" class="bg-white text-xs font-bold rounded-lg px-2 py-1 border border-slate-300 text-teal-800 focus:outline-none cursor-pointer">
-            <option value="">載入中...</option>
+            <option value="">判斷中...</option>
           </select>
         </div>
 
@@ -395,7 +395,7 @@
         <div class="border-b pb-3 flex justify-between items-center flex-wrap gap-2">
           <div>
             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2"><span>📅</span> 學期管理</h2>
-            <p class="text-xs text-slate-500 mt-1">目前依學期別由小到大排序顯示。設定各學期之起訖日期，指定系統預設學期，或修改歷史學期時間。</p>
+            <p class="text-xs text-slate-500 mt-1">系統依今日日期自動判斷當前學期，亦可於頂端導覽列下拉選單自由手動切換歷史學期。</p>
           </div>
           <button onclick="openAddSemesterModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold py-1.5 px-3.5 rounded-lg shadow-xs transition">+ 新增學期</button>
         </div>
@@ -407,7 +407,7 @@
                 <th class="p-2.5 border-b">學期別</th>
                 <th class="p-2.5 border-b">開始日期</th>
                 <th class="p-2.5 border-b">結束日期</th>
-                <th class="p-2.5 border-b text-center">預設學期</th>
+                <th class="p-2.5 border-b text-center">學期狀態</th>
                 <th class="p-2.5 border-b text-center w-28">操作</th>
               </tr>
             </thead>
