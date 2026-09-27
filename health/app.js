@@ -23,6 +23,15 @@ function sortStudentsCanonical(a, b, classMap) {
   return (a.name || '').localeCompare(b.name || '', 'zh-Hant');
 }
 
+function formatShortDate(dateStr) {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    return `${parts[1]}/${parts[2]}`;
+  }
+  return dateStr;
+}
+
 function closeModal() {
   document.getElementById('commonModal').classList.add('hidden');
   document.getElementById('modalBody').innerHTML = '';
@@ -301,7 +310,8 @@ async function onStudentSelectChange(studentId) {
 
     return `
       <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-        <td class="p-1.5 border-r font-medium text-slate-800 break-words">${r.record_date} ${r.record_time ? r.record_time.slice(0, 5) : ''}</td>
+        <td class="p-1.5 border-r font-medium text-slate-800 break-words">${formatShortDate(r.record_date)}</td>
+        <td class="p-1.5 border-r text-slate-500 break-words">${r.record_time ? r.record_time.slice(0, 5) : '-'}</td>
         <td class="p-1.5 border-r text-teal-800 font-semibold break-words">${semClassText}</td>
         <td class="p-1.5 border-r break-words">${r.location || '-'}</td>
         <td class="p-1.5 border-r text-slate-700 break-words">${siteText}</td>
@@ -318,13 +328,14 @@ async function onStudentSelectChange(studentId) {
       <table class="w-full table-fixed text-[11px] text-left border-collapse">
         <thead class="bg-teal-50/80 text-teal-900 border-b border-teal-200">
           <tr>
-            <th class="w-[18%] p-1.5 border-r font-semibold">時間</th>
-            <th class="w-[16%] p-1.5 border-r font-semibold">班級</th>
+            <th class="w-[10%] p-1.5 border-r font-semibold">日期</th>
+            <th class="w-[9%] p-1.5 border-r font-semibold">時間</th>
+            <th class="w-[17%] p-1.5 border-r font-semibold">學期/班級</th>
             <th class="w-[10%] p-1.5 border-r font-semibold">地點</th>
-            <th class="w-[12%] p-1.5 border-r font-semibold">部位</th>
-            <th class="w-[12%] p-1.5 border-r font-semibold">體溫/休息</th>
-            <th class="w-[14%] p-1.5 border-r font-semibold">傷病</th>
-            <th class="w-[12%] p-1.5 border-r font-semibold">處理</th>
+            <th class="w-[11%] p-1.5 border-r font-semibold">部位</th>
+            <th class="w-[11%] p-1.5 border-r font-semibold">體溫/休息</th>
+            <th class="w-[15%] p-1.5 border-r font-semibold">傷病類別</th>
+            <th class="w-[11%] p-1.5 border-r font-semibold">處理方式</th>
             <th class="w-[6%] p-1.5 font-semibold">備註</th>
           </tr>
         </thead>
@@ -510,7 +521,7 @@ function renderFilteredRecordsTable() {
       rangeText = `在指定日期區間 (${startDate || '起'} ~ ${endDate || '訖'}) `;
     }
 
-    tbody.innerHTML = `<tr><td colspan="9" class="text-center p-4 text-slate-400">${rangeText}查無登記紀錄</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" class="text-center p-4 text-slate-400">${rangeText}查無登記紀錄</td></tr>`;
     return;
   }
 
@@ -521,8 +532,11 @@ function renderFilteredRecordsTable() {
 
     return `
       <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-        <td class="p-2 border-r break-words font-medium">${r.record_date}<br><span class="text-slate-400">${r.record_time?.slice(0,5)}</span></td>
-        <td class="p-2 border-r break-words font-medium text-slate-800">${r.classes?.name || ''}<br><span class="font-bold text-teal-800">${r.students ? r.students.seat_no + '號 ' + r.students.name : '-'}</span></td>
+        <td class="p-2 border-r break-words font-medium text-slate-800">${formatShortDate(r.record_date)}</td>
+        <td class="p-2 border-r break-words text-slate-500">${r.record_time?.slice(0,5)}</td>
+        <td class="p-2 border-r break-words font-medium text-slate-800">${r.classes?.name || ''}</td>
+        <td class="p-2 border-r break-words text-center font-bold text-teal-800">${r.students ? r.students.seat_no : '-'}</td>
+        <td class="p-2 border-r break-words font-medium text-slate-800">${r.students ? r.students.name : '-'}</td>
         <td class="p-2 border-r break-words">${r.location || '-'}</td>
         <td class="p-2 border-r break-words text-slate-700">${(r.side ? r.side + ' ' : '') + (r.body_part || '-')}</td>
         <td class="p-2 border-r break-words text-teal-700 font-medium">${vitalText}</td>
@@ -530,7 +544,7 @@ function renderFilteredRecordsTable() {
         <td class="p-2 border-r break-words text-slate-600">${(r.treatments || []).join(',') || '-'}</td>
         <td class="p-2 border-r break-words text-slate-500">${r.note || '-'}</td>
         <td class="p-2 text-center break-words">
-          <button onclick="editRecord('${r.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-1.5">修改</button>
+          <button onclick="editRecord('${r.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-1">修改</button>
           <button onclick="deleteRecord('${r.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-semibold">刪除</button>
         </td>
       </tr>
