@@ -12,9 +12,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
 </head>
-<body class="bg-slate-100 text-slate-800 p-3 md:p-6 min-h-screen">
+<body class="bg-slate-100 text-slate-800 p-3 md:p-5 min-h-screen overflow-x-hidden">
 
-  <div class="max-w-7xl mx-auto space-y-5">
+  <div class="w-full max-w-7xl mx-auto space-y-5">
     
     <header class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4">
       <div class="flex items-center gap-3.5">
@@ -46,7 +46,7 @@
     </header>
 
     <main id="view-register" class="space-y-6">
-      <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200">
+      <section class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200">
         <form id="careForm" class="space-y-5">
           <input type="hidden" id="edit_record_id" value="">
           
@@ -59,21 +59,21 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">日期 *</label>
-                <input type="date" id="record_date" required class="w-full p-2 border rounded-lg bg-white text-sm">
+                <input type="date" id="record_date" required class="w-full p-2 border rounded-lg bg-white text-xs md:text-sm">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">時間 *</label>
-                <input type="time" id="record_time" required class="w-full p-2 border rounded-lg bg-white text-sm">
+                <input type="time" id="record_time" required class="w-full p-2 border rounded-lg bg-white text-xs md:text-sm">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">班級 *</label>
-                <select id="class_select" required class="w-full p-2 border rounded-lg bg-white text-sm font-medium text-teal-700">
+                <select id="class_select" required class="w-full p-2 border rounded-lg bg-white text-xs md:text-sm font-medium text-teal-700">
                   <option value="">載入班級中...</option>
                 </select>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">學生 *</label>
-                <select id="student_select" required disabled onchange="onStudentSelectChange(this.value)" class="w-full p-2 border rounded-lg bg-slate-100 text-sm font-medium">
+                <select id="student_select" required disabled onchange="onStudentSelectChange(this.value)" class="w-full p-2 border rounded-lg bg-slate-100 text-xs md:text-sm font-medium">
                   <option value="">請先選取班級</option>
                 </select>
               </div>
@@ -104,7 +104,7 @@
                 </div>
               </div>
 
-              <div id="studentHistoryList" class="max-h-64 overflow-y-auto custom-scroll pr-1">
+              <div id="studentHistoryList" class="max-h-64 overflow-y-auto pr-0.5">
                 <div class="p-4 text-center text-slate-400 text-xs">查詢中...</div>
               </div>
             </div>
@@ -113,18 +113,18 @@
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">發生地點</label>
                 <div id="locationContainer">
-                  <input type="text" id="location_field" placeholder="可直接填寫或由設定新增" class="w-full p-2 border rounded-lg bg-white text-sm">
+                  <input type="text" id="location_field" placeholder="可直接填寫或由設定新增" class="w-full p-2 border rounded-lg bg-white text-xs md:text-sm">
                 </div>
               </div>
 
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">體溫 (°C)</label>
-                <input type="number" step="0.1" min="30" max="45" id="body_temperature" placeholder="例：36.5" class="w-full p-2 border rounded-lg bg-white text-sm">
+                <input type="number" step="0.1" min="30" max="45" id="body_temperature" placeholder="例：36.5" class="w-full p-2 border rounded-lg bg-white text-xs md:text-sm">
               </div>
 
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">休息時間 (分鐘)</label>
-                <input type="number" min="0" step="1" id="rest_minutes" placeholder="例：20" class="w-full p-2 border rounded-lg bg-white text-sm">
+                <input type="number" min="0" step="1" id="rest_minutes" placeholder="例：20" class="w-full p-2 border rounded-lg bg-white text-xs md:text-sm">
               </div>
             </div>
           </div>
@@ -133,11 +133,11 @@
             <div class="p-4 border rounded-xl bg-teal-50/50 border-teal-200 space-y-3">
               <div>
                 <span class="text-xs font-bold text-teal-900 block mb-2">1. 受傷部位 (請先在此複選部位)</span>
-                <div class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8 gap-2 text-xs" id="bodyPartGroup">
+                <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 text-xs" id="bodyPartGroup">
                   <span class="text-slate-400 col-span-full">載入中...</span>
                 </div>
                 <div class="mt-2.5 flex items-center gap-2">
-                  <span class="text-xs text-slate-500 font-medium">其他部位補充：</span>
+                  <span class="text-xs text-slate-500 font-medium shrink-0">其他部位補充：</span>
                   <input type="text" id="body_part_other" oninput="checkBodyPartSelection()" placeholder="如勾選「其他」，請在此補充說明" class="flex-1 max-w-sm p-1.5 border rounded-lg text-xs bg-white">
                 </div>
               </div>
@@ -159,21 +159,21 @@
 
             <div class="p-3.5 border rounded-xl bg-orange-50/40 border-orange-200">
               <span class="text-xs font-bold text-orange-800 block mb-2">意外傷害 (可複選)</span>
-              <div class="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-2 text-xs" id="accidentGroup">
+              <div class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-10 gap-2 text-xs" id="accidentGroup">
                 <span class="text-slate-400 col-span-full">載入中...</span>
               </div>
             </div>
 
             <div class="p-3.5 border rounded-xl bg-blue-50/40 border-blue-200">
               <span class="text-xs font-bold text-blue-800 block mb-2">一般症狀 (可複選)</span>
-              <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 text-xs" id="symptomGroup">
+              <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2 text-xs" id="symptomGroup">
                 <span class="text-slate-400 col-span-full">載入中...</span>
               </div>
             </div>
 
             <div class="p-3.5 border rounded-xl bg-emerald-50/40 border-emerald-200">
               <span class="text-xs font-bold text-emerald-800 block mb-2">處理方式 (可複選)</span>
-              <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2 text-xs" id="treatmentGroup">
+              <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-9 gap-2 text-xs" id="treatmentGroup">
                 <span class="text-slate-400 col-span-full">載入中...</span>
               </div>
             </div>
@@ -195,7 +195,7 @@
         </form>
       </section>
 
-      <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <section class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex flex-wrap justify-between items-center gap-3">
           <div>
             <h3 class="font-bold text-slate-800 text-base">
@@ -206,39 +206,36 @@
           
           <div class="flex flex-wrap items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200 text-xs">
             <div class="flex items-center gap-1">
-              <span class="text-slate-500 font-semibold whitespace-nowrap">日期篩選：</span>
+              <span class="text-slate-500 font-semibold shrink-0">日期：</span>
               <input type="date" id="filterRecordDateStart" onchange="renderFilteredRecordsTable()" class="p-1 border rounded-lg bg-white text-xs font-medium">
               <span class="text-slate-400">至</span>
               <input type="date" id="filterRecordDateEnd" onchange="renderFilteredRecordsTable()" class="p-1 border rounded-lg bg-white text-xs font-medium">
             </div>
             <div class="flex items-center gap-1">
-              <button type="button" onclick="setRecordDateFilterToday()" class="bg-white hover:bg-slate-100 text-teal-700 border border-slate-300 px-2 py-1 rounded-lg font-bold transition shadow-2xs whitespace-nowrap">今日</button>
-              <button type="button" onclick="clearRecordDateFilter()" class="bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 px-2 py-1 rounded-lg font-bold transition shadow-2xs whitespace-nowrap">全部</button>
-              <button onclick="fetchRecords()" class="text-xs text-teal-700 hover:underline px-2 py-1 font-medium whitespace-nowrap">重新整理</button>
+              <button type="button" onclick="setRecordDateFilterToday()" class="bg-white hover:bg-slate-100 text-teal-700 border border-slate-300 px-2 py-1 rounded-lg font-bold transition shadow-2xs">今日</button>
+              <button type="button" onclick="clearRecordDateFilter()" class="bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 px-2 py-1 rounded-lg font-bold transition shadow-2xs">全部</button>
+              <button onclick="fetchRecords()" class="text-xs text-teal-700 hover:underline px-1.5 py-1 font-medium">重新整理</button>
             </div>
           </div>
         </div>
 
-        <div class="overflow-x-auto custom-scroll border border-slate-200 rounded-xl">
-          <table class="min-w-full text-xs text-left border-collapse border">
-            <thead class="bg-slate-100 text-slate-600">
+        <div class="w-full border border-slate-200 rounded-xl overflow-hidden bg-white">
+          <table class="w-full table-fixed text-[11px] md:text-xs text-left border-collapse">
+            <thead class="bg-slate-100 text-slate-600 border-b border-slate-200">
               <tr>
-                <th class="p-2.5 border whitespace-nowrap">日期</th>
-                <th class="p-2.5 border whitespace-nowrap">時間</th>
-                <th class="p-2.5 border whitespace-nowrap">班級</th>
-                <th class="p-2.5 border text-center w-14 whitespace-nowrap">座號</th>
-                <th class="p-2.5 border whitespace-nowrap">姓名</th>
-                <th class="p-2.5 border whitespace-nowrap">地點</th>
-                <th class="p-2.5 border whitespace-nowrap">部位</th>
-                <th class="p-2.5 border whitespace-nowrap">體溫/休息</th>
-                <th class="p-2.5 border whitespace-nowrap">傷病類別</th>
-                <th class="p-2.5 border whitespace-nowrap">處理方式</th>
-                <th class="p-2.5 border min-w-[140px] max-w-[200px] break-words whitespace-normal">備註</th>
-                <th class="p-2.5 border text-center w-28 whitespace-nowrap">操作</th>
+                <th class="w-[12%] p-2 border-r font-semibold">日期時間</th>
+                <th class="w-[15%] p-2 border-r font-semibold">班級/學生</th>
+                <th class="w-[9%] p-2 border-r font-semibold">地點</th>
+                <th class="w-[10%] p-2 border-r font-semibold">部位</th>
+                <th class="w-[10%] p-2 border-r font-semibold">體溫/休息</th>
+                <th class="w-[14%] p-2 border-r font-semibold">傷病類別</th>
+                <th class="w-[12%] p-2 border-r font-semibold">處理方式</th>
+                <th class="w-[11%] p-2 border-r font-semibold">備註</th>
+                <th class="w-[7%] p-2 text-center font-semibold">操作</th>
               </tr>
             </thead>
-            <tbody id="recordsTable" class="divide-y text-slate-700">
-              <tr><td colspan="12" class="text-center p-4 text-slate-400">載入紀錄中...</td></tr>
+            <tbody id="recordsTable" class="divide-y divide-slate-100 text-slate-700">
+              <tr><td colspan="9" class="text-center p-4 text-slate-400">載入紀錄中...</td></tr>
             </tbody>
           </table>
         </div>
@@ -246,7 +243,7 @@
     </main>
 
     <main id="view-reports" class="hidden space-y-6">
-      <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <section class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="border-b pb-3 flex justify-between items-center flex-wrap gap-2">
           <div>
             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -310,7 +307,7 @@
     </main>
 
     <main id="view-settings" class="hidden space-y-6">
-      <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <section class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="border-b pb-3 flex justify-between items-center flex-wrap gap-2">
           <div>
             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2"><span>🏫</span> 班級管理</h2>
@@ -322,13 +319,13 @@
           <button onclick="openAddClassModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold py-1.5 px-3.5 rounded-lg shadow-xs transition">+ 新增班級</button>
         </div>
 
-        <div class="overflow-x-auto border rounded-xl max-h-72 overflow-y-auto">
-          <table class="min-w-full text-xs text-left bg-white">
-            <thead class="bg-slate-100 text-slate-600 sticky top-0">
+        <div class="w-full border rounded-xl max-h-72 overflow-y-auto">
+          <table class="w-full table-fixed text-xs text-left bg-white">
+            <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b">
               <tr>
-                <th class="p-2.5 border-b w-16">編號</th>
-                <th class="p-2.5 border-b">班級名稱</th>
-                <th class="p-2.5 border-b text-center w-28">操作</th>
+                <th class="w-16 p-2.5">編號</th>
+                <th class="p-2.5">班級名稱</th>
+                <th class="w-28 p-2.5 text-center">操作</th>
               </tr>
             </thead>
             <tbody id="classManageTableTbody" class="divide-y text-slate-700">
@@ -338,7 +335,7 @@
         </div>
       </section>
 
-      <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
+      <section class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
         <div class="border-b pb-3 flex justify-between items-center flex-wrap gap-2">
           <div>
             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2"><span>👥</span> 學生管理</h2>
@@ -355,7 +352,7 @@
             <button type="button" onclick="downloadStudentTemplate()" class="inline-flex items-center gap-1 bg-white hover:bg-blue-50 text-blue-700 border border-blue-300 text-xs font-bold py-1.5 px-3 rounded-lg shadow-2xs transition">📄 下載空白檔案 (學生名冊.xlsx)</button>
           </div>
           <div class="flex flex-wrap items-center gap-3 pt-1">
-            <input type="file" id="studentFileInput" accept=".xlsx, .xls, .csv" class="text-xs p-1.5 border rounded-lg bg-white flex-1 min-w-[220px]">
+            <input type="file" id="studentFileInput" accept=".xlsx, .xls, .csv" class="text-xs p-1.5 border rounded-lg bg-white flex-1 min-w-[200px]">
             <button type="button" onclick="handleStudentImport()" id="doImportStudentBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition">匯入</button>
           </div>
         </div>
@@ -370,20 +367,20 @@
             </div>
 
             <div class="flex items-center gap-2">
-              <input type="text" id="searchStudentInput" oninput="filterStudentTable()" placeholder="搜尋姓名或座號..." class="p-1.5 border rounded-lg text-xs bg-white w-40">
+              <input type="text" id="searchStudentInput" oninput="filterStudentTable()" placeholder="搜尋姓名或座號..." class="p-1.5 border rounded-lg text-xs bg-white w-36">
               <button onclick="openAddStudentModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-1.5 px-3 rounded-lg shadow-sm">+ 新增學生</button>
             </div>
           </div>
 
-          <div class="overflow-x-auto border rounded-xl max-h-96 overflow-y-auto">
-            <table class="min-w-full text-xs text-left bg-white">
-              <thead class="bg-slate-100 text-slate-600 sticky top-0">
+          <div class="w-full border rounded-xl max-h-96 overflow-y-auto">
+            <table class="w-full table-fixed text-xs text-left bg-white">
+              <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b">
                 <tr>
-                  <th class="p-2.5 border-b">班級</th>
-                  <th class="p-2.5 border-b w-16">座號</th>
-                  <th class="p-2.5 border-b">學生姓名</th>
-                  <th class="p-2.5 border-b">性別</th>
-                  <th class="p-2.5 border-b text-center w-28">操作</th>
+                  <th class="w-[28%] p-2.5">班級</th>
+                  <th class="w-16 p-2.5">座號</th>
+                  <th class="w-[30%] p-2.5">學生姓名</th>
+                  <th class="w-16 p-2.5">性別</th>
+                  <th class="w-24 p-2.5 text-center">操作</th>
                 </tr>
               </thead>
               <tbody id="studentManageTbody" class="divide-y text-slate-700">
@@ -394,7 +391,7 @@
         </div>
       </section>
 
-      <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <section class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="border-b pb-3 flex justify-between items-center flex-wrap gap-2">
           <div>
             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2"><span>📅</span> 學期管理</h2>
@@ -403,15 +400,15 @@
           <button onclick="openAddSemesterModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold py-1.5 px-3.5 rounded-lg shadow-xs transition">+ 新增學期</button>
         </div>
 
-        <div class="overflow-x-auto border rounded-xl">
-          <table class="min-w-full text-xs text-left bg-white">
-            <thead class="bg-slate-100 text-slate-600">
+        <div class="w-full border rounded-xl overflow-hidden">
+          <table class="w-full table-fixed text-xs text-left bg-white">
+            <thead class="bg-slate-100 text-slate-600 border-b">
               <tr>
-                <th class="p-2.5 border-b">學期別</th>
-                <th class="p-2.5 border-b">開始日期</th>
-                <th class="p-2.5 border-b">結束日期</th>
-                <th class="p-2.5 border-b text-center">學期狀態</th>
-                <th class="p-2.5 border-b text-center w-28">操作</th>
+                <th class="w-[20%] p-2.5">學期別</th>
+                <th class="w-[25%] p-2.5">開始日期</th>
+                <th class="w-[25%] p-2.5">結束日期</th>
+                <th class="w-[15%] p-2.5 text-center">學期狀態</th>
+                <th class="w-[15%] p-2.5 text-center">操作</th>
               </tr>
             </thead>
             <tbody id="semestersTableBody" class="divide-y text-slate-700">
@@ -421,26 +418,26 @@
         </div>
       </section>
 
-      <section class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <section class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="border-b pb-3">
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2"><span>🏷️</span> 地點與傷病分類項目管理</h2>
           <p class="text-xs text-slate-500 mt-1">點擊各欄「+ 新增」開啟視窗，支援一行輸入一項（單項或多項皆可換行輸入），儲存後自動去重。</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50 space-y-3 flex flex-col justify-between">
-            <div class="space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
+          <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2.5 flex flex-col justify-between">
+            <div class="space-y-2.5">
               <div class="flex justify-between items-center pb-2 border-b border-slate-200">
                 <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5"><span>📍</span> 校園地點</span>
                 <span id="badgeCountLocation" class="text-[10px] font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">0 項</span>
               </div>
               <div class="flex justify-end">
-                <button type="button" onclick="openAddCategoryLinesModal('location', '校園地點')" class="bg-teal-600 hover:bg-teal-700 text-white text-xs px-3 py-1 rounded-lg font-bold shadow-xs">+ 新增</button>
+                <button type="button" onclick="openAddCategoryLinesModal('location', '校園地點')" class="bg-teal-600 hover:bg-teal-700 text-white text-xs px-2.5 py-1 rounded-lg font-bold shadow-xs">+ 新增</button>
               </div>
-              <div class="overflow-x-auto border border-slate-200 rounded-lg max-h-72 overflow-y-auto bg-white custom-scroll min-h-[160px]">
-                <table class="min-w-full text-xs text-left">
-                  <thead class="bg-slate-100 text-slate-600 sticky top-0">
-                    <tr><th class="p-2 border-b">地點名稱</th><th class="p-2 border-b text-center w-24">操作</th></tr>
+              <div class="w-full border border-slate-200 rounded-lg max-h-64 overflow-y-auto bg-white">
+                <table class="w-full table-fixed text-xs text-left">
+                  <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b">
+                    <tr><th class="p-2">地點名稱</th><th class="w-20 p-2 text-center">操作</th></tr>
                   </thead>
                   <tbody id="locationsManageTbody" class="divide-y text-slate-700">
                     <tr><td colspan="2" class="text-center p-3 text-slate-400">載入中...</td></tr>
@@ -450,19 +447,19 @@
             </div>
           </div>
 
-          <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50 space-y-3 flex flex-col justify-between">
-            <div class="space-y-3">
+          <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2.5 flex flex-col justify-between">
+            <div class="space-y-2.5">
               <div class="flex justify-between items-center pb-2 border-b border-slate-200">
                 <span class="text-xs font-bold text-teal-900 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-teal-500"></span>受傷部位</span>
                 <span id="badgeCountBodyPart" class="text-[10px] font-bold bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full">0 項</span>
               </div>
               <div class="flex justify-end">
-                <button onclick="openAddCategoryLinesModal('body_part', '受傷部位')" class="bg-teal-600 hover:bg-teal-700 text-white text-xs px-3 py-1 rounded-lg font-bold shadow-xs">+ 新增</button>
+                <button onclick="openAddCategoryLinesModal('body_part', '受傷部位')" class="bg-teal-600 hover:bg-teal-700 text-white text-xs px-2.5 py-1 rounded-lg font-bold shadow-xs">+ 新增</button>
               </div>
-              <div class="overflow-x-auto border border-slate-200 rounded-lg max-h-72 overflow-y-auto bg-white custom-scroll min-h-[160px]">
-                <table class="min-w-full text-xs text-left">
-                  <thead class="bg-slate-100 text-slate-600 sticky top-0">
-                    <tr><th class="p-2 border-b">項目名稱</th><th class="p-2 border-b text-center w-24">操作</th></tr>
+              <div class="w-full border border-slate-200 rounded-lg max-h-64 overflow-y-auto bg-white">
+                <table class="w-full table-fixed text-xs text-left">
+                  <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b">
+                    <tr><th class="p-2">項目名稱</th><th class="w-20 p-2 text-center">操作</th></tr>
                   </thead>
                   <tbody id="bodyPartManageTbody" class="divide-y text-slate-700">
                     <tr><td colspan="2" class="text-center p-3 text-slate-400">載入中...</td></tr>
@@ -472,19 +469,19 @@
             </div>
           </div>
 
-          <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50 space-y-3 flex flex-col justify-between">
-            <div class="space-y-3">
+          <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2.5 flex flex-col justify-between">
+            <div class="space-y-2.5">
               <div class="flex justify-between items-center pb-2 border-b border-slate-200">
                 <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span>意外傷害</span>
                 <span id="badgeCountAccident" class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">0 項</span>
               </div>
               <div class="flex justify-end">
-                <button onclick="openAddCategoryLinesModal('accident', '意外傷害')" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1 rounded-lg font-bold shadow-xs">+ 新增</button>
+                <button onclick="openAddCategoryLinesModal('accident', '意外傷害')" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-2.5 py-1 rounded-lg font-bold shadow-xs">+ 新增</button>
               </div>
-              <div class="overflow-x-auto border border-slate-200 rounded-lg max-h-72 overflow-y-auto bg-white custom-scroll min-h-[160px]">
-                <table class="min-w-full text-xs text-left">
-                  <thead class="bg-slate-100 text-slate-600 sticky top-0">
-                    <tr><th class="p-2 border-b">項目名稱</th><th class="p-2 border-b text-center w-24">操作</th></tr>
+              <div class="w-full border border-slate-200 rounded-lg max-h-64 overflow-y-auto bg-white">
+                <table class="w-full table-fixed text-xs text-left">
+                  <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b">
+                    <tr><th class="p-2">項目名稱</th><th class="w-20 p-2 text-center">操作</th></tr>
                   </thead>
                   <tbody id="accidentManageTbody" class="divide-y text-slate-700">
                     <tr><td colspan="2" class="text-center p-3 text-slate-400">載入中...</td></tr>
@@ -494,19 +491,19 @@
             </div>
           </div>
 
-          <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50 space-y-3 flex flex-col justify-between">
-            <div class="space-y-3">
+          <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2.5 flex flex-col justify-between">
+            <div class="space-y-2.5">
               <div class="flex justify-between items-center pb-2 border-b border-slate-200">
                 <span class="text-xs font-bold text-sky-900 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-sky-500"></span>身體症狀</span>
                 <span id="badgeCountSymptom" class="text-[10px] font-bold bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full">0 項</span>
               </div>
               <div class="flex justify-end">
-                <button onclick="openAddCategoryLinesModal('symptom', '身體症狀')" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 py-1 rounded-lg font-bold shadow-xs">+ 新增</button>
+                <button onclick="openAddCategoryLinesModal('symptom', '身體症狀')" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-2.5 py-1 rounded-lg font-bold shadow-xs">+ 新增</button>
               </div>
-              <div class="overflow-x-auto border border-slate-200 rounded-lg max-h-72 overflow-y-auto bg-white custom-scroll min-h-[160px]">
-                <table class="min-w-full text-xs text-left">
-                  <thead class="bg-slate-100 text-slate-600 sticky top-0">
-                    <tr><th class="p-2 border-b">項目名稱</th><th class="p-2 border-b text-center w-24">操作</th></tr>
+              <div class="w-full border border-slate-200 rounded-lg max-h-64 overflow-y-auto bg-white">
+                <table class="w-full table-fixed text-xs text-left">
+                  <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b">
+                    <tr><th class="p-2">項目名稱</th><th class="w-20 p-2 text-center">操作</th></tr>
                   </thead>
                   <tbody id="symptomManageTbody" class="divide-y text-slate-700">
                     <tr><td colspan="2" class="text-center p-3 text-slate-400">載入中...</td></tr>
@@ -516,19 +513,19 @@
             </div>
           </div>
 
-          <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50 space-y-3 flex flex-col justify-between">
-            <div class="space-y-3">
+          <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2.5 flex flex-col justify-between">
+            <div class="space-y-2.5">
               <div class="flex justify-between items-center pb-2 border-b border-slate-200">
                 <span class="text-xs font-bold text-emerald-900 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>處理方式</span>
                 <span id="badgeCountTreatment" class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">0 項</span>
               </div>
               <div class="flex justify-end">
-                <button onclick="openAddCategoryLinesModal('treatment', '處理方式')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1 rounded-lg font-bold shadow-xs">+ 新增</button>
+                <button onclick="openAddCategoryLinesModal('treatment', '處理方式')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2.5 py-1 rounded-lg font-bold shadow-xs">+ 新增</button>
               </div>
-              <div class="overflow-x-auto border border-slate-200 rounded-lg max-h-72 overflow-y-auto bg-white custom-scroll min-h-[160px]">
-                <table class="min-w-full text-xs text-left">
-                  <thead class="bg-slate-100 text-slate-600 sticky top-0">
-                    <tr><th class="p-2 border-b">項目名稱</th><th class="p-2 border-b text-center w-24">操作</th></tr>
+              <div class="w-full border border-slate-200 rounded-lg max-h-64 overflow-y-auto bg-white">
+                <table class="w-full table-fixed text-xs text-left">
+                  <thead class="bg-slate-100 text-slate-600 sticky top-0 border-b">
+                    <tr><th class="p-2">項目名稱</th><th class="w-20 p-2 text-center">操作</th></tr>
                   </thead>
                   <tbody id="treatmentManageTbody" class="divide-y text-slate-700">
                     <tr><td colspan="2" class="text-center p-3 text-slate-400">載入中...</td></tr>

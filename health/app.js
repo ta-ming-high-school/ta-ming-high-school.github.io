@@ -99,12 +99,12 @@ function renderLocationSelect() {
 
   if (locations.length > 0) {
     locBox.innerHTML = `
-      <select id="location_field" class="w-full p-2 border rounded-lg bg-white text-sm font-medium">
+      <select id="location_field" class="w-full p-2 border rounded-lg bg-white text-xs md:text-sm font-medium">
         <option value="">-- 選取地點 --</option>
         ${locations.map(l => `<option value="${l}">${l}</option>`).join('')}
       </select>`;
   } else {
-    locBox.innerHTML = `<input type="text" id="location_field" placeholder="可直接填寫或由設定新增" class="w-full p-2 border rounded-lg bg-white text-sm">`;
+    locBox.innerHTML = `<input type="text" id="location_field" placeholder="可直接填寫或由設定新增" class="w-full p-2 border rounded-lg bg-white text-xs md:text-sm">`;
   }
 }
 
@@ -116,9 +116,9 @@ function renderBodyPartsCheckboxes() {
     return;
   }
   container.innerHTML = bodyParts.map(bp => `
-    <label class="flex items-center space-x-1 p-1 rounded border bg-white cursor-pointer hover:border-teal-500">
+    <label class="flex items-center space-x-1 p-1 rounded border bg-white cursor-pointer hover:border-teal-500 text-xs">
       <input type="checkbox" name="body_parts" value="${bp}" onchange="checkBodyPartSelection()" class="rounded text-teal-600">
-      <span class="select-none">${bp}</span>
+      <span class="select-none truncate">${bp}</span>
     </label>
   `).join('');
 }
@@ -291,43 +291,41 @@ async function onStudentSelectChange(studentId) {
   totalMinutesElem.innerText = totalMins;
 
   const rowsHtml = records.map(r => {
-    const tempText = r.body_temperature ? `${r.body_temperature}°C` : '';
+    const tempText = r.body_temperature ? `${r.body_temperature}°` : '';
     const restText = r.rest_minutes ? `${r.rest_minutes}分` : '';
-    const vitalText = [tempText, restText].filter(Boolean).join(' / ') || '-';
-    const siteText = (r.side ? r.side + '側 ' : '') + (r.body_part || '-');
-    const categoriesText = [...(r.accident_types || []), ...(r.symptom_types || [])].join(', ') || '-';
-    const treatmentsText = (r.treatments || []).join(', ') || '-';
+    const vitalText = [tempText, restText].filter(Boolean).join('/') || '-';
+    const siteText = (r.side ? r.side + ' ' : '') + (r.body_part || '-');
+    const categoriesText = [...(r.accident_types || []), ...(r.symptom_types || [])].join(',') || '-';
+    const treatmentsText = (r.treatments || []).join(',') || '-';
     const semClassText = `[${r.semester || ''}] ${r.classes?.name || ''}`;
 
     return `
-      <tr class="hover:bg-slate-50 transition">
-        <td class="p-2 border whitespace-nowrap font-medium text-slate-800">${r.record_date}</td>
-        <td class="p-2 border whitespace-nowrap text-slate-500">${r.record_time ? r.record_time.slice(0, 5) : '-'}</td>
-        <td class="p-2 border whitespace-nowrap text-teal-800 font-semibold">${semClassText}</td>
-        <td class="p-2 border whitespace-nowrap">${r.location || '-'}</td>
-        <td class="p-2 border text-slate-700 whitespace-nowrap">${siteText}</td>
-        <td class="p-2 border whitespace-nowrap text-teal-700 font-medium">${vitalText}</td>
-        <td class="p-2 border text-slate-600 whitespace-nowrap">${categoriesText}</td>
-        <td class="p-2 border text-slate-600 whitespace-nowrap">${treatmentsText}</td>
-        <td class="p-2 border min-w-[140px] max-w-[220px] break-words whitespace-normal text-slate-500">${r.note || '-'}</td>
+      <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+        <td class="p-1.5 border-r font-medium text-slate-800 break-words">${r.record_date} ${r.record_time ? r.record_time.slice(0, 5) : ''}</td>
+        <td class="p-1.5 border-r text-teal-800 font-semibold break-words">${semClassText}</td>
+        <td class="p-1.5 border-r break-words">${r.location || '-'}</td>
+        <td class="p-1.5 border-r text-slate-700 break-words">${siteText}</td>
+        <td class="p-1.5 border-r text-teal-700 font-medium break-words">${vitalText}</td>
+        <td class="p-1.5 border-r text-slate-600 break-words">${categoriesText}</td>
+        <td class="p-1.5 border-r text-slate-600 break-words">${treatmentsText}</td>
+        <td class="p-1.5 break-words text-slate-500">${r.note || '-'}</td>
       </tr>
     `;
   }).join('');
 
   historyList.innerHTML = `
-    <div class="overflow-x-auto custom-scroll border border-teal-200/80 rounded-xl bg-white">
-      <table class="min-w-full text-xs text-left border-collapse border">
+    <div class="w-full border border-teal-200/80 rounded-xl bg-white overflow-hidden">
+      <table class="w-full table-fixed text-[11px] text-left border-collapse">
         <thead class="bg-teal-50/80 text-teal-900 border-b border-teal-200">
           <tr>
-            <th class="p-2 border whitespace-nowrap">日期</th>
-            <th class="p-2 border whitespace-nowrap">時間</th>
-            <th class="p-2 border whitespace-nowrap">學期/班級</th>
-            <th class="p-2 border whitespace-nowrap">地點</th>
-            <th class="p-2 border whitespace-nowrap">部位</th>
-            <th class="p-2 border whitespace-nowrap">體溫/休息</th>
-            <th class="p-2 border whitespace-nowrap">傷病類別</th>
-            <th class="p-2 border whitespace-nowrap">處理方式</th>
-            <th class="p-2 border min-w-[140px] max-w-[220px] whitespace-normal">備註</th>
+            <th class="w-[18%] p-1.5 border-r font-semibold">時間</th>
+            <th class="w-[16%] p-1.5 border-r font-semibold">班級</th>
+            <th class="w-[10%] p-1.5 border-r font-semibold">地點</th>
+            <th class="w-[12%] p-1.5 border-r font-semibold">部位</th>
+            <th class="w-[12%] p-1.5 border-r font-semibold">體溫/休息</th>
+            <th class="w-[14%] p-1.5 border-r font-semibold">傷病</th>
+            <th class="w-[12%] p-1.5 border-r font-semibold">處理</th>
+            <th class="w-[6%] p-1.5 font-semibold">備註</th>
           </tr>
         </thead>
         <tbody class="divide-y text-slate-700">
@@ -512,30 +510,27 @@ function renderFilteredRecordsTable() {
       rangeText = `在指定日期區間 (${startDate || '起'} ~ ${endDate || '訖'}) `;
     }
 
-    tbody.innerHTML = `<tr><td colspan="12" class="text-center p-4 text-slate-400">${rangeText}查無登記紀錄</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center p-4 text-slate-400">${rangeText}查無登記紀錄</td></tr>`;
     return;
   }
 
   tbody.innerHTML = filtered.map(r => {
-    const tempText = r.body_temperature ? `${r.body_temperature}°C` : '';
+    const tempText = r.body_temperature ? `${r.body_temperature}°` : '';
     const restText = r.rest_minutes ? `${r.rest_minutes}分` : '';
-    const vitalText = [tempText, restText].filter(Boolean).join(' / ') || '-';
+    const vitalText = [tempText, restText].filter(Boolean).join('/') || '-';
 
     return `
-      <tr class="hover:bg-slate-50">
-        <td class="p-2.5 border whitespace-nowrap">${r.record_date}</td>
-        <td class="p-2.5 border whitespace-nowrap">${r.record_time?.slice(0,5)}</td>
-        <td class="p-2.5 border whitespace-nowrap font-medium text-slate-800">${r.classes?.name || ''}</td>
-        <td class="p-2.5 border text-center font-bold text-teal-800 whitespace-nowrap">${r.students ? r.students.seat_no : '-'}</td>
-        <td class="p-2.5 border whitespace-nowrap font-medium text-slate-800">${r.students ? r.students.name : '-'}</td>
-        <td class="p-2.5 border whitespace-nowrap">${r.location || '-'}</td>
-        <td class="p-2.5 border text-slate-700 whitespace-nowrap">${(r.side ? r.side + '側 ' : '') + (r.body_part || '-')}</td>
-        <td class="p-2.5 border whitespace-nowrap text-teal-700 font-medium">${vitalText}</td>
-        <td class="p-2.5 border text-slate-600 whitespace-nowrap">${[...(r.accident_types || []), ...(r.symptom_types || [])].join(', ') || '-'}</td>
-        <td class="p-2.5 border text-slate-600 whitespace-nowrap">${(r.treatments || []).join(', ') || '-'}</td>
-        <td class="p-2.5 border min-w-[140px] max-w-[200px] break-words whitespace-normal text-slate-500">${r.note || ''}</td>
-        <td class="p-2.5 border text-center whitespace-nowrap">
-          <button onclick="editRecord('${r.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2">修改</button>
+      <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+        <td class="p-2 border-r break-words font-medium">${r.record_date}<br><span class="text-slate-400">${r.record_time?.slice(0,5)}</span></td>
+        <td class="p-2 border-r break-words font-medium text-slate-800">${r.classes?.name || ''}<br><span class="font-bold text-teal-800">${r.students ? r.students.seat_no + '號 ' + r.students.name : '-'}</span></td>
+        <td class="p-2 border-r break-words">${r.location || '-'}</td>
+        <td class="p-2 border-r break-words text-slate-700">${(r.side ? r.side + ' ' : '') + (r.body_part || '-')}</td>
+        <td class="p-2 border-r break-words text-teal-700 font-medium">${vitalText}</td>
+        <td class="p-2 border-r break-words text-slate-600">${[...(r.accident_types || []), ...(r.symptom_types || [])].join(',') || '-'}</td>
+        <td class="p-2 border-r break-words text-slate-600">${(r.treatments || []).join(',') || '-'}</td>
+        <td class="p-2 border-r break-words text-slate-500">${r.note || '-'}</td>
+        <td class="p-2 text-center break-words">
+          <button onclick="editRecord('${r.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-1.5">修改</button>
           <button onclick="deleteRecord('${r.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-semibold">刪除</button>
         </td>
       </tr>
@@ -972,9 +967,9 @@ function renderSemestersTable() {
 
     return `
       <tr class="hover:bg-slate-50">
-        <td class="p-2.5 font-bold text-teal-800">${s.id}</td>
-        <td class="p-2.5">${s.start_date}</td>
-        <td class="p-2.5">${s.end_date}</td>
+        <td class="p-2.5 font-bold text-teal-800 break-words">${s.id}</td>
+        <td class="p-2.5 break-words">${s.start_date}</td>
+        <td class="p-2.5 break-words">${s.end_date}</td>
         <td class="p-2.5 text-center">${statusBadge}</td>
         <td class="p-2.5 text-center">
           <button onclick="editSemester('${s.id}')" class="text-blue-600 hover:underline mr-2">編輯</button>
@@ -1128,9 +1123,9 @@ function renderClassManagementTable() {
 
   tbody.innerHTML = allClassObjects.map((c, idx) => `
     <tr class="hover:bg-slate-50 transition">
-      <td class="p-2.5 font-bold text-teal-800">${idx + 1}</td>
-      <td class="p-2.5 font-bold text-slate-800">${c.name}</td>
-      <td class="p-2.5 text-center whitespace-nowrap">
+      <td class="p-2.5 font-bold text-teal-800 break-words">${idx + 1}</td>
+      <td class="p-2.5 font-bold text-slate-800 break-words">${c.name}</td>
+      <td class="p-2.5 text-center">
         <button onclick="openEditClassModalById('${c.id}', '${c.name}')" class="text-blue-600 hover:text-blue-800 mr-2.5 font-medium">編輯</button>
         <button onclick="deleteClassById('${c.id}', '${c.name}')" class="text-rose-600 hover:text-rose-800 font-medium">刪除</button>
       </td>
@@ -1271,13 +1266,13 @@ function renderStudentManageTable(list) {
   tbody.innerHTML = list.map(s => {
     const cName = classMap.get(s.class_id) || '';
     return `
-      <tr class="hover:bg-slate-50 transition">
-        <td class="p-2.5 font-bold text-teal-800">${cName}</td>
-        <td class="p-2.5 font-bold text-teal-800">${s.seat_no}</td>
-        <td class="p-2.5 font-medium text-slate-800">${s.name}</td>
-        <td class="p-2.5 text-slate-600">${s.gender || '女'}</td>
-        <td class="p-2.5 text-center whitespace-nowrap">
-          <button onclick="openEditStudentModal('${s.id}', '${s.class_id}', ${s.seat_no}, '${s.name}', '${s.gender || '女'}')" class="text-blue-600 hover:text-blue-800 mr-2.5 font-medium">編輯</button>
+      <tr class="hover:bg-slate-50 transition border-b">
+        <td class="p-2.5 font-bold text-teal-800 break-words">${cName}</td>
+        <td class="p-2.5 font-bold text-teal-800 break-words">${s.seat_no}</td>
+        <td class="p-2.5 font-medium text-slate-800 break-words">${s.name}</td>
+        <td class="p-2.5 text-slate-600 break-words">${s.gender || '女'}</td>
+        <td class="p-2.5 text-center">
+          <button onclick="openEditStudentModal('${s.id}', '${s.class_id}', ${s.seat_no}, '${s.name}', '${s.gender || '女'}')" class="text-blue-600 hover:text-blue-800 mr-2 font-medium">編輯</button>
           <button onclick="deleteStudent('${s.id}', '${s.name}')" class="text-rose-600 hover:text-rose-800 font-medium">刪除</button>
         </td>
       </tr>
@@ -1442,7 +1437,6 @@ async function handleStudentImport() {
       const classMap = new Map();
       (existingClasses || []).forEach(c => classMap.set(c.name, c.id));
 
-      // 自動解析班級並建立
       const distinctClasses = [...new Set(rows.map(r => String(r['班級'] || r['class'] || '').trim()).filter(Boolean))];
       for (const cName of distinctClasses) {
         if (!classMap.has(cName)) {
@@ -1547,9 +1541,9 @@ function renderCategoryManageTable(tbodyId, list, category, badgeId) {
   }
 
   tbody.innerHTML = list.map(item => `
-    <tr class="hover:bg-slate-50 transition">
-      <td class="p-2 font-medium text-slate-800">${item}</td>
-      <td class="p-2 text-center whitespace-nowrap">
+    <tr class="hover:bg-slate-50 transition border-b">
+      <td class="p-2 font-medium text-slate-800 break-words">${item}</td>
+      <td class="p-2 text-center">
         <button onclick="editCustomItemPrompt('${category}', '${item}')" class="text-blue-600 hover:text-blue-800 mr-2 font-medium">編輯</button>
         <button onclick="removeCustomItem('${category}', '${item}')" class="text-rose-600 hover:text-rose-800 font-medium">刪除</button>
       </td>
@@ -1561,7 +1555,7 @@ function openAddCategoryLinesModal(category, categoryLabel) {
   const bodyHtml = `
     <div>
       <label class="block text-xs font-semibold text-slate-600 mb-1">新增「${categoryLabel}」項目（一行一項，支援單項或多項）：</label>
-      <textarea id="modalAddCategoryLines" rows="5" class="w-full p-2 border rounded-lg text-xs bg-white" placeholder="項目一&#10;項目二"></textarea>
+      <textarea id="modalAddCategoryLines" rows="5" class="w-full p-2 border rounded-lg text-xs bg-white font-medium" placeholder="項目一&#10;項目二"></textarea>
     </div>
   `;
   openModal(`新增${categoryLabel}項目`, bodyHtml, async () => {
@@ -1632,9 +1626,9 @@ function renderCheckboxes(containerId, list, name) {
     return;
   }
   el.innerHTML = list.map(item => `
-    <label class="flex items-center space-x-1 p-1 rounded border bg-white cursor-pointer hover:border-teal-500">
+    <label class="flex items-center space-x-1 p-1 rounded border bg-white cursor-pointer hover:border-teal-500 text-xs">
       <input type="checkbox" name="${name}" value="${item}" class="rounded text-teal-600">
-      <span class="select-none">${item}</span>
+      <span class="select-none truncate">${item}</span>
     </label>
   `).join('');
 }
