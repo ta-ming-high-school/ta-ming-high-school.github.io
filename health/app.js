@@ -880,9 +880,6 @@ function exportYearAnalysisReport() {
   XLSX.writeFile(wb, `潭子區-私立大明高中_${sem}_學生傷病統計分析.xlsx`);
 }
 
-/**
- * 依當日日期自動決定當前學期（若 userChosenId 存在則維持手動選定）
- */
 async function loadSemesters(autoSelectByDate = true) {
   const { data, error } = await dbClient.from('semesters').select('*');
   const select = document.getElementById('globalSemesterSelect');
@@ -897,19 +894,14 @@ async function loadSemesters(autoSelectByDate = true) {
     return;
   }
 
-  // 學期依代碼從小到大排序 (如 113-1, 113-2, 114-1, 114-2...)
   allSemesters = data.sort((a, b) => a.id.localeCompare(b.id, 'zh-Hant', { numeric: true }));
 
   const today = new Date().toISOString().split('T')[0];
-
-  // 自動找出涵蓋今日日期的學期
   const matchedByDate = allSemesters.find(s => today >= s.start_date && today <= s.end_date);
 
   if (autoSelectByDate || !currentSemesterObj) {
-    // 依今日匹配，若今日剛好在寒暑假無任何匹配，則選擇最新的學期
     currentSemesterObj = matchedByDate || allSemesters[allSemesters.length - 1];
   } else {
-    // 若使用者已手動選定某學期，檢查該學期是否依然存在
     const stillExists = allSemesters.find(s => s.id === currentSemesterObj.id);
     currentSemesterObj = stillExists || matchedByDate || allSemesters[allSemesters.length - 1];
   }
@@ -1130,7 +1122,7 @@ function renderClassManagementTable() {
   if (!tbody) return;
 
   if (allClassObjects.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="3" class="text-center p-4 text-slate-400">目前尚無班級資料，請點擊上方按鈕新增。</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="3" class="text-center p-4 text-slate-400">目前尚無班級資料，請點擊上方按鈕新增，或直接至學生管理匯入名冊自動建立。</td></tr>';
     return;
   }
 
@@ -1151,19 +1143,39 @@ function openAddClassModal() {
   const sem = currentSemesterObj.id;
   const bodyHtml = `
     <div>
-      <label class="block text-xs font-semibold text-slate-600 mb-1">班級名稱 (如 701國一1、1001廣一1)：</label>
-      <input type="text" id="modalClassNameInput" class="w-full p-2 border rounded-lg text-xs bg-white" placeholder="請輸入班級名稱">
+      <label class="block text-xs font-semibold text-slate-600 mb-1">班級名稱（一行一個，支援單班或多班複製貼上）：</label>
+      <textarea id="modalClassNamesTextarea" rows="6" class="w-full p-2 border rounded-lg text-xs bg-white font-medium" placeholder="701國一1&#10;702國一2&#10;1001廣一1&#10;1002美一1"></textarea>
+      <p class="text-[11px] text-slate-400 mt-1">※ 若該學期已存在相同名稱的班級，系統將自動跳過避免重複。</p>
     </div>
   `;
   openModal(`新增班級 (${sem} 學期)`, bodyHtml, async () => {
-    const name = document.getElementById('modalClassNameInput').value.trim();
-    if (!name) return alert('班級名稱不能為空！');
-    const { error } = await dbClient.from('classes').insert([{ semester: sem, name: name }]);
+    const text = document.getElementById('modalClassNamesTextarea').value.trim();
+    if (!text) return alert('請輸入班級名稱！');
+
+    const inputLines = [...new Set(text.split('\n').map(l => l.trim()).filter(Boolean))];
+    if (inputLines.length === 0) return alert('請輸入有效班級名稱！');
+
+    const existingNames = new Set(allClassObjects.map(c => c.name));
+    const newClassNames = inputLines.filter(name => !existingNames.has(name));
+
+    if (newClassNames.length === 0) {
+      alert('輸入的所有班級皆已存在於目前學期中！');
+      closeModal();
+      return;
+    }
+
+    const payload = newClassNames.map(name => ({
+      semester: sem,
+      name: name
+    }));
+
+    const { error } = await dbClient.from('classes').insert(payload);
     if (error) {
-      alert('新增失敗：' + error.message);
+      alert('新增班級失敗：' + error.message);
     } else {
       closeModal();
       await initClasses();
+      alert(`成功為 [${sem}] 學期新增 ${newClassNames.length} 個班級！`);
     }
   });
 }
@@ -1228,7 +1240,7 @@ async function loadAllSemesterStudents() {
 
 function filterStudentTable() {
   const manageSelect = document.getElementById('manageClassSelect');
-  const selectedClassId = manageSelect ? manageSelect.value : '';
+  const selectedClassId = manageSelect ? manageClassSelect.value : '';
   const searchInput = document.getElementById('searchStudentInput');
   const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
@@ -1430,6 +1442,7 @@ async function handleStudentImport() {
       const classMap = new Map();
       (existingClasses || []).forEach(c => classMap.set(c.name, c.id));
 
+      // 自動解析班級並建立
       const distinctClasses = [...new Set(rows.map(r => String(r['班級'] || r['class'] || '').trim()).filter(Boolean))];
       for (const cName of distinctClasses) {
         if (!classMap.has(cName)) {
